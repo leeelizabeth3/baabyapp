@@ -1,29 +1,66 @@
 {
   "expo": {
-    "name": "BabyApp",
-    "slug": "BabyApp",
+    "name": "아기 성장보고서",
+    "slug": "baby-growth-report",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFE070"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.elizlee.babyreport",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "아기 사진을 성장보고서에 추가하고 저장하기 위해 사진 접근 권한이 필요합니다.",
+        "NSPhotoLibraryAddUsageDescription": "완성된 성장보고서를 사진첩에 저장하기 위해 권한이 필요합니다.",
+        "NSCameraUsageDescription": "아기 사진을 직접 촬영해 성장보고서에 추가하기 위해 카메라 접근 권한이 필요합니다.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.elizlee.babyreport",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
+      ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "아기 사진을 성장보고서에 추가하기 위해 사진 접근 권한이 필요합니다.",
+          "cameraPermission": "아기 사진을 직접 촬영하기 위해 카메라 접근 권한이 필요합니다."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "아기 사진을 성장보고서에 추가하고 저장하기 위해 사진 접근 권한이 필요합니다.",
+          "savePhotosPermission": "완성된 성장보고서를 사진첩에 저장하기 위해 권한이 필요합니다.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "29792449-cf4b-4e15-a13f-1b3eba9f4d91"
+      }
     }
   }
 }
