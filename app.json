@@ -2,6 +2,7 @@
   "expo": {
     "name": "BabySteps",
     "slug": "baby-growth-report",
+    "owner": "bobae317",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
