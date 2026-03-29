@@ -3,8 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeModules } from 'react-native';
 
 function getIAP() {
-  if (!NativeModules.ExpoInAppPurchases) return null;
-  return require('expo-in-app-purchases');
+  if (!NativeModules.ExpoIapModule) return null;
+  return require('expo-iap');
 }
 
 const PREMIUM_KEY = 'isPremium_v1';
@@ -52,11 +52,10 @@ export async function getProducts() {
   try {
     const IAP = getIAP();
     if (!IAP) return [];
-    await IAP.connectAsync();
-    const { results } = await IAP.getProductsAsync([
-      PRODUCTS.LIFETIME,
-      PRODUCTS.YEARLY,
-    ]);
+    await IAP.initConnection();
+    const results = await IAP.fetchProducts({
+      skus: [PRODUCTS.LIFETIME, PRODUCTS.YEARLY],
+    });
     return results || [];
   } catch (e) {
     console.error('getProducts error:', e);
@@ -67,26 +66,27 @@ export async function getProducts() {
 export async function purchaseProduct(productId) {
   const IAP = getIAP();
   if (!IAP) throw new Error('In-app purchases not available in Expo Go. Please use a development build.');
-  await IAP.purchaseItemAsync(productId);
+  const isSubs = productId === PRODUCTS.YEARLY;
+  await IAP.requestPurchase({
+    request: { apple: { sku: productId } },
+    type: isSubs ? 'subs' : 'in-app',
+  });
 }
 
 export async function restorePurchases() {
   const IAP = getIAP();
   if (!IAP) return false;
-  const history = await IAP.getPurchaseHistoryAsync();
-  const items = history?.results || [];
-  const hasPremium = items.some(
+  const purchases = await IAP.getAvailablePurchases() || [];
+  const hasPremium = purchases.some(
     item => item.productId === PRODUCTS.LIFETIME || item.productId === PRODUCTS.YEARLY
   );
-  if (hasPremium) {
-    await setPremium();
-  }
+  if (hasPremium) await setPremium();
   return hasPremium;
 }
 
 export async function disconnectIAP() {
   try {
     const IAP = getIAP();
-    if (IAP) await IAP.disconnectAsync();
+    if (IAP) await IAP.endConnection();
   } catch (_) {}
 }

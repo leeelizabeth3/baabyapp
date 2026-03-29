@@ -27,16 +27,13 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
     });
 
     // 결제 완료 리스너
-    let subscription;
-    if (NativeModules.ExpoInAppPurchases) {
-      const IAP = require('expo-in-app-purchases');
-      subscription = IAP.setPurchaseListener(async ({ responseCode, results }) => {
-        if (responseCode === IAP.IAPResponseCode.OK) {
-          for (const purchase of results) {
-            if (!purchase.acknowledged) {
-              await IAP.finishTransactionAsync(purchase, true);
-            }
-          }
+    let purchaseSub;
+    let errorSub;
+    if (NativeModules.ExpoIapModule) {
+      const IAP = require('expo-iap');
+      purchaseSub = IAP.purchaseUpdatedListener(async (purchase) => {
+        if (purchase) {
+          await IAP.finishTransaction({ purchase, isConsumable: false });
           await setPremium();
           setAlreadyPremium(true);
           setLoading(null);
@@ -45,17 +42,19 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
             '이제 모든 테마를 무제한으로 사용할 수 있어요!\n\n수익은 전액 베이비박스 기부에 사용됩니다 ❤️'
           );
           onPurchaseSuccess?.();
-        } else if (responseCode === IAP.IAPResponseCode.USER_CANCELED) {
-          setLoading(null);
-        } else {
-          setLoading(null);
+        }
+      });
+      errorSub = IAP.purchaseErrorListener((error) => {
+        setLoading(null);
+        if (error.code !== 'E_USER_CANCELLED') {
           Alert.alert('결제 실패', '다시 시도해주세요.');
         }
       });
     }
 
     return () => {
-      subscription?.remove?.();
+      purchaseSub?.remove();
+      errorSub?.remove();
       disconnectIAP();
     };
   }, []);
