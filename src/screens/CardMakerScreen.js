@@ -589,7 +589,7 @@ const BabyCard = React.forwardRef(function BabyCard(
       </View>
 
       <Text style={[cardStyles.footer, { color: t.dark ? 'rgba(255,255,255,0.25)' : 'rgba(90,60,20,0.3)' }]}>
-        Baby Steps 🍼
+        Made with BabySteps 🍼
       </Text>
     </View>
   );

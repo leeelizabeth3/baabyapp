@@ -13,8 +13,6 @@ export const PRODUCTS = {
 // Expo Go에서는 네이티브 모듈 없음 → lazy require로 안전하게 처리
 function getIAP() {
   try {
-    const { NativeModules } = require('react-native');
-    if (!NativeModules.ExpoIap) return null;
     const mod = require('expo-iap');
     if (!mod?.initConnection) return null;
     return mod;
