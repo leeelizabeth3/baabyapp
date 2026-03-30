@@ -108,6 +108,8 @@ export default function CardMakerScreen() {
   const [heightEnd, setHeightEnd] = useState('');
   const [weightStart, setWeightStart] = useState('');
   const [weightEnd, setWeightEnd] = useState('');
+  const [headStart, setHeadStart] = useState('');
+  const [headEnd, setHeadEnd] = useState('');
   const [clothes, setClothes] = useState('');
   const [sleep, setSleep] = useState('');
   const [feeding, setFeeding] = useState('');
@@ -219,8 +221,9 @@ export default function CardMakerScreen() {
 
   // Build display strings
   const hwStr = [
-    (heightStart || heightEnd) ? `${heightStart || '?'}cm${heightEnd ? ' → ' + heightEnd + 'cm' : ''}` : null,
-    (weightStart || weightEnd) ? `${weightStart || '?'}kg${weightEnd ? ' → ' + weightEnd + 'kg' : ''}` : null,
+    (heightStart || heightEnd) ? `키 ${heightStart || '?'}cm${heightEnd ? ' → ' + heightEnd + 'cm' : ''}` : null,
+    (weightStart || weightEnd) ? `몸무게 ${weightStart || '?'}kg${weightEnd ? ' → ' + weightEnd + 'kg' : ''}` : null,
+    (headStart || headEnd) ? `머리둘레 ${headStart || '?'}cm${headEnd ? ' → ' + headEnd + 'cm' : ''}` : null,
   ].filter(Boolean).join('\n');
 
   const dateStr = dateStart && dateEnd
@@ -245,7 +248,7 @@ export default function CardMakerScreen() {
                     const profile = await getBabyProfile();
                     await saveBabyProfile({ ...profile, name: text });
                   }}
-                  placeholder="예: 하엘"
+                  placeholder="예: 제니"
                 />
               </FormField>
               <FormField label="생년월일" style={{ flex: 1 }}>
@@ -397,22 +400,30 @@ export default function CardMakerScreen() {
 
         {/* ── 키/몸무게 ── */}
         <View style={styles.sec}>
-          <SectionTitle>📐 키 / 몸무게</SectionTitle>
+          <SectionTitle>📐 키 / 몸무게 / 머리둘레</SectionTitle>
           <Card>
             <RowFields>
-              <FormField label="키 시작 (cm)" style={{ flex: 1 }}>
+              <FormField label="시작 키(cm)" style={{ flex: 1 }}>
                 <StyledInput value={heightStart} onChangeText={setHeightStart} placeholder="49" keyboardType="decimal-pad" />
               </FormField>
-              <FormField label="키 끝 (cm)" style={{ flex: 1 }}>
+              <FormField label="끝 키(cm)" style={{ flex: 1 }}>
                 <StyledInput value={heightEnd} onChangeText={setHeightEnd} placeholder="54" keyboardType="decimal-pad" />
               </FormField>
             </RowFields>
             <RowFields>
-              <FormField label="몸무게 시작 (kg)" style={{ flex: 1 }}>
-                <StyledInput value={weightStart} onChangeText={setWeightStart} placeholder="3.06" keyboardType="decimal-pad" />
+              <FormField label="시작 몸무게(kg)" style={{ flex: 1 }}>
+                <StyledInput value={weightStart} onChangeText={setWeightStart} placeholder="3.0" keyboardType="decimal-pad" />
               </FormField>
-              <FormField label="몸무게 끝 (kg)" style={{ flex: 1 }}>
+              <FormField label="끝 몸무게(kg)" style={{ flex: 1 }}>
                 <StyledInput value={weightEnd} onChangeText={setWeightEnd} placeholder="4.0" keyboardType="decimal-pad" />
+              </FormField>
+              </RowFields>
+              <RowFields>
+              <FormField label="시작 머리둘레(cm)" style={{ flex: 1 }}>
+                <StyledInput value={headStart} onChangeText={setHeadStart} placeholder="33" keyboardType="decimal-pad" />
+              </FormField>
+              <FormField label="끝 머리둘레(cm)" style={{ flex: 1 }}>
+                <StyledInput value={headEnd} onChangeText={setHeadEnd} placeholder="36" keyboardType="decimal-pad" />
               </FormField>
             </RowFields>
           </Card>
@@ -426,25 +437,25 @@ export default function CardMakerScreen() {
               <StyledInput value={clothes} onChangeText={setClothes} placeholder="배냇저고리 / 60" />
             </FormField>
             <FormField label="😴 수면">
-              <StyledInput value={sleep} onChangeText={setSleep} placeholder={"평균 13~14시간\n2시간에 한 번 일어나 맘마타임"} multiline />
+              <StyledInput value={sleep} onChangeText={setSleep} placeholder={"평균 15시간\n3시간에 한 번 깨서 맘마타임"} multiline />
             </FormField>
             <FormField label="🍼 맘마">
-              <StyledInput value={feeding} onChangeText={setFeeding} placeholder={"트루맘 뉴클래스 1단계\n유축수유 60~100ml × 8회"} multiline />
+              <StyledInput value={feeding} onChangeText={setFeeding} placeholder={"압타밀 1단계\n유축수유 60~100ml × 8회"} multiline />
             </FormField>
             <FormField label="🧷 기저귀">
-              <StyledInput value={diaper} onChangeText={setDiaper} placeholder="하기스 네이처메이드 2단계" />
+              <StyledInput value={diaper} onChangeText={setDiaper} placeholder="하기스 네이처메이드 1단계" />
             </FormField>
             <FormField label="💉 접종내역">
-              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (02/26)" multiline />
+              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (01/26)" multiline />
             </FormField>
             <FormField label="❤️ 좋아하는 것">
-              <StyledInput value={likes} onChangeText={setLikes} placeholder={"아빠와 하는 목욕\n트립트랩 뉴본"} multiline />
+              <StyledInput value={likes} onChangeText={setLikes} placeholder={"타이니 모빌\n트립트랩 뉴본"} multiline />
             </FormField>
             <FormField label="😤 싫어하는 것">
-              <StyledInput value={dislikes} onChangeText={setDislikes} placeholder={"아기침대\n속싸개"} multiline />
+              <StyledInput value={dislikes} onChangeText={setDislikes} placeholder={"아기침대에서 자기\n목욕하기"} multiline />
             </FormField>
             <FormField label="✨ 특이사항">
-              <StyledInput value={special} onChangeText={setSpecial} placeholder={"왼쪽발목 & 등 몽고반점\n황달 3일 겪음\n취미: 딸꾹질"} multiline />
+              <StyledInput value={special} onChangeText={setSpecial} placeholder={"양쪽 팔, 왼쪽 발 몽고반점\n황달 겪음\n취미: 딸꾹질하기 토하기"} multiline />
             </FormField>
           </Card>
         </View>
@@ -601,7 +612,7 @@ const BabyCard = React.forwardRef(function BabyCard(
 
       {/* TOP ROW: 키/몸무게 | 접종내역 | 옷사이즈 */}
       <View style={cardStyles.row}>
-        <InfoBlock tag="📐 키/몸무게" content={hwStr} />
+        <InfoBlock tag="📐 키/몸무게/머리둘레" content={hwStr} />
         <View style={{ width: 6 }} />
         <InfoBlock tag="💉 접종내역" content={vaccine} />
         <View style={{ width: 6 }} />

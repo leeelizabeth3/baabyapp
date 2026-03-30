@@ -7,7 +7,6 @@ export const FREE_THEMES = ['honeybee', 'blossom', 'ocean'];
 
 export const PRODUCTS = {
   LIFETIME: 'com.elizlee.babyreport.premium_lifetime',
-  YEARLY: 'com.elizlee.babyreport.premium_yearly',
 };
 
 // Expo Go에서는 네이티브 모듈 없음 → lazy require로 안전하게 처리
@@ -58,7 +57,8 @@ export async function getProducts() {
     const IAP = getIAP();
     if (!IAP) return [];
     await IAP.initConnection();
-    const results = await IAP.fetchProducts({ skus: [PRODUCTS.LIFETIME, PRODUCTS.YEARLY] });
+    const results = await IAP.fetchProducts({ skus: [PRODUCTS.LIFETIME], type: 'in-app' });
+    console.log('[IAP] products:', JSON.stringify(results));
     return results || [];
   } catch (e) {
     console.error('getProducts error:', e);
@@ -69,12 +69,14 @@ export async function getProducts() {
 export async function purchaseProduct(productId) {
   const IAP = getIAP();
   if (!IAP) throw new Error('개발 빌드에서만 결제할 수 있어요.');
+  console.log('[IAP] purchaseProduct called with:', productId);
+  await IAP.initConnection();
   await IAP.requestPurchase({
     request: {
       apple: { sku: productId },
       google: { skus: [productId] },
     },
-    type: productId === PRODUCTS.YEARLY ? 'subs' : 'in-app',
+    type: 'in-app',
   });
 }
 
@@ -82,9 +84,7 @@ export async function restorePurchases() {
   const IAP = getIAP();
   if (!IAP) return false;
   const purchases = (await IAP.getAvailablePurchases()) || [];
-  const hasPremium = purchases.some(
-    item => item.productId === PRODUCTS.LIFETIME || item.productId === PRODUCTS.YEARLY
-  );
+  const hasPremium = purchases.some(item => item.productId === PRODUCTS.LIFETIME);
   if (hasPremium) await setPremium();
   return hasPremium;
 }
@@ -99,11 +99,27 @@ export async function disconnectIAP() {
 export function addPurchaseListener(callback) {
   const IAP = getIAP();
   if (!IAP) return { remove: () => {} };
-  return IAP.purchaseUpdatedListener(async (purchase) => {
+
+  const errorSub = IAP.purchaseErrorListener((error) => {
+    console.error('[IAP] purchaseError:', JSON.stringify(error));
+  });
+
+  const purchaseSub = IAP.purchaseUpdatedListener(async (purchase) => {
+    console.log('[IAP] purchaseUpdated:', JSON.stringify(purchase));
     if (!purchase) return;
     try {
       await IAP.finishTransaction({ purchase, isConsumable: false });
-    } catch (_) {}
+      console.log('[IAP] finishTransaction OK');
+    } catch (e) {
+      console.error('[IAP] finishTransaction error:', e);
+    }
     callback(purchase);
   });
+
+  return {
+    remove: () => {
+      purchaseSub?.remove?.();
+      errorSub?.remove?.();
+    },
+  };
 }

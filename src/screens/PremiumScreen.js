@@ -12,7 +12,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(null);
   const [alreadyPremium, setAlreadyPremium] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('lifetime');
   const [products, setProducts] = useState({});
 
   useEffect(() => {
@@ -44,15 +43,15 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
     };
   }, []);
 
-  const handlePurchase = async (plan) => {
-    setLoading(plan);
+  const handlePurchase = async () => {
+    setLoading('lifetime');
     try {
-      const productId = plan === 'lifetime' ? PRODUCTS.LIFETIME : PRODUCTS.YEARLY;
-      await purchaseProduct(productId);
-      // 결제 결과는 setPurchaseListener에서 처리
+      await purchaseProduct(PRODUCTS.LIFETIME);
     } catch (e) {
       setLoading(null);
-      Alert.alert('결제 오류', e.message || '다시 시도해주세요.');
+      const msg = e?.message || '';
+      if (msg.toLowerCase().includes('cancel')) return;
+      Alert.alert('결제 오류', msg || '다시 시도해주세요.');
     }
   };
 
@@ -147,53 +146,16 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           </View>
         </View>
 
-        {/* 플랜 선택 */}
-        <Text style={styles.planTitle}>플랜 선택</Text>
-        <View style={styles.planRow}>
-          {/* 일회결제 */}
-          <TouchableOpacity
-            style={[styles.planCard, selectedPlan === 'lifetime' && styles.planCardActive]}
-            onPress={() => setSelectedPlan('lifetime')}
-          >
-            <View style={styles.planBadgeWrap}>
-              <View style={styles.planBestBadge}>
-                <Text style={styles.planBestText}>인기 ⭐</Text>
-              </View>
-            </View>
-            <Text style={styles.planName}>평생 이용권</Text>
-            <Text style={styles.planPrice}>
-              {products[PRODUCTS.LIFETIME]?.price ?? 'S$4.99'}
-            </Text>
-            <Text style={styles.planDesc}>한 번만 결제{'\n'}평생 사용</Text>
-          </TouchableOpacity>
-
-          {/* 연간 구독 */}
-          <TouchableOpacity
-            style={[styles.planCard, selectedPlan === 'yearly' && styles.planCardActive]}
-            onPress={() => setSelectedPlan('yearly')}
-          >
-            <View style={styles.planBadgeWrap} />
-            <Text style={styles.planName}>연간 구독</Text>
-            <Text style={styles.planPrice}>
-              {products[PRODUCTS.YEARLY]?.price ?? 'S$2.99'}
-            </Text>
-            <Text style={styles.planDesc}>매년 자동 갱신{'\n'}S$2.99/년</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* 구매 버튼 */}
         <TouchableOpacity
           style={styles.buyBtn}
-          onPress={() => handlePurchase(selectedPlan)}
+          onPress={() => handlePurchase('lifetime')}
           disabled={!!loading}
         >
-          {loading === selectedPlan
+          {loading === 'lifetime'
             ? <ActivityIndicator color="#5A3A10" />
             : <Text style={styles.buyBtnText}>
-                {selectedPlan === 'lifetime'
-                  ? 'S$4.99 — 지금 구매하기 ✨'
-                  : 'S$2.99/년 — 구독 시작하기 ✨'
-                }
+                {products[PRODUCTS.LIFETIME]?.displayPrice ?? '$2.99'} — 지금 구매하기 ✨
               </Text>
           }
         </TouchableOpacity>
