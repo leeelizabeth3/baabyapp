@@ -177,11 +177,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           </TouchableOpacity>
         )}
 
-        <Text style={styles.legal}>
-          구독은 언제든지 취소할 수 있어요.{'\n'}
-          Apple ID 계정으로 청구됩니다.
-        </Text>
-
       </ScrollView>
     </View>
   );

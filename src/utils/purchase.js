@@ -57,6 +57,15 @@ export async function getProducts() {
     const IAP = getIAP();
     if (!IAP) return [];
     await IAP.initConnection();
+
+    // 큐에 쌓인 미완료 트랜잭션 정리 (새 결제 막는 원인)
+    try {
+      const pending = await IAP.getAvailablePurchases();
+      for (const purchase of (pending || [])) {
+        await IAP.finishTransaction({ purchase, isConsumable: false });
+      }
+    } catch (_) {}
+
     const results = await IAP.fetchProducts({ skus: [PRODUCTS.LIFETIME], type: 'in-app' });
     console.log('[IAP] products:', JSON.stringify(results));
     return results || [];
@@ -70,7 +79,6 @@ export async function purchaseProduct(productId) {
   const IAP = getIAP();
   if (!IAP) throw new Error('개발 빌드에서만 결제할 수 있어요.');
   console.log('[IAP] purchaseProduct called with:', productId);
-  await IAP.initConnection();
   await IAP.requestPurchase({
     request: {
       apple: { sku: productId },
