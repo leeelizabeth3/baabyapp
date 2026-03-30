@@ -128,13 +128,13 @@ export default function CardMakerScreen() {
   const t = THEMES[selectedTheme];
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    const { status, accessPrivileges } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted' && accessPrivileges !== 'limited') {
       Alert.alert('권한 필요', '사진 접근 권한이 필요합니다.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,

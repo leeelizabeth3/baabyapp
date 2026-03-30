@@ -5,8 +5,7 @@ import {
   Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NativeModules } from 'react-native';
-import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, restorePurchases, disconnectIAP, PRODUCTS } from '../utils/purchase';
+import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, restorePurchases, disconnectIAP, PRODUCTS, addPurchaseListener } from '../utils/purchase';
 import { THEME_LIST } from '../data/themes';
 
 export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
@@ -27,34 +26,20 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
     });
 
     // 결제 완료 리스너
-    let purchaseSub;
-    let errorSub;
-    if (NativeModules.ExpoIapModule) {
-      const IAP = require('expo-iap');
-      purchaseSub = IAP.purchaseUpdatedListener(async (purchase) => {
-        if (purchase) {
-          await IAP.finishTransaction({ purchase, isConsumable: false });
-          await setPremium();
-          setAlreadyPremium(true);
-          setLoading(null);
-          Alert.alert(
-            '🎉 프리미엄 활성화!',
-            '이제 모든 테마를 무제한으로 사용할 수 있어요!\n\n수익은 전액 베이비박스 기부에 사용됩니다 ❤️'
-          );
-          onPurchaseSuccess?.();
-        }
-      });
-      errorSub = IAP.purchaseErrorListener((error) => {
-        setLoading(null);
-        if (error.code !== 'E_USER_CANCELLED') {
-          Alert.alert('결제 실패', '다시 시도해주세요.');
-        }
-      });
-    }
+    const subscription = addPurchaseListener(async (purchase) => {
+      if (!purchase) return;
+      await setPremium();
+      setAlreadyPremium(true);
+      setLoading(null);
+      Alert.alert(
+        '🎉 프리미엄 활성화!',
+        '이제 모든 테마를 무제한으로 사용할 수 있어요!\n\n수익은 전액 베이비박스 기부에 사용됩니다 ❤️'
+      );
+      onPurchaseSuccess?.();
+    });
 
     return () => {
-      purchaseSub?.remove();
-      errorSub?.remove();
+      subscription?.remove?.();
       disconnectIAP();
     };
   }, []);
@@ -156,7 +141,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.donationTitle}>수익 100% 기부</Text>
             <Text style={styles.donationText}>
-              앱 수익은 전액 싱가포르 베이비박스 기부에 사용돼요.
+              앱 수익은 전액 베이비박스 기부에 사용돼요.
               구매 한 번이 도움이 필요한 아기에게 전달됩니다 🍼
             </Text>
           </View>
@@ -206,8 +191,8 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
             ? <ActivityIndicator color="#5A3A10" />
             : <Text style={styles.buyBtnText}>
                 {selectedPlan === 'lifetime'
-                  ? `${products[PRODUCTS.LIFETIME]?.price ?? 'S$4.99'} — 지금 구매하기 ✨`
-                  : `${products[PRODUCTS.YEARLY]?.price ?? 'S$2.99'}/년 — 구독 시작하기 ✨`
+                  ? 'S$4.99 — 지금 구매하기 ✨'
+                  : 'S$2.99/년 — 구독 시작하기 ✨'
                 }
               </Text>
           }

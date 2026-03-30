@@ -57,7 +57,7 @@ export default function GrowthScreen() {
     let icon, title, body;
     if (all.some(p => p < 3 || p > 97)) {
       icon = '⚠️'; title = '소아과 상담을 권장해요';
-      body = 'P3 미만 또는 P97 초과 수치가 있어요. KKH·NUH 소아과에서 상담받아 보세요.';
+      body = 'P3 미만 또는 P97 초과 수치가 있어요. 소아과에서 상담받아 보세요.';
     } else if (all.some(p => p < 15)) {
       icon = '💙'; title = '조금 작은 편이에요';
       body = '평균보다 작지만 정상 범위 안에 있어요. 꾸준한 수유와 영양이 중요해요!';
@@ -220,7 +220,7 @@ export default function GrowthScreen() {
 
                 <View style={styles.disclaimer}>
                   <Text style={styles.disclaimerText}>
-                    ⚠️ WHO 기준 참고용. P3 미만 또는 P97 초과 시 KKH·NUH 소아과 상담 권장.
+                    ⚠️ WHO 기준 참고용. P3 미만 또는 P97 초과 시 소아과 상담 권장.
                   </Text>
                 </View>
               </>

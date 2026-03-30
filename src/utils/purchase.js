@@ -1,22 +1,29 @@
 // src/utils/purchase.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NativeModules } from 'react-native';
-
-function getIAP() {
-  if (!NativeModules.ExpoIapModule) return null;
-  return require('expo-iap');
-}
 
 const PREMIUM_KEY = 'isPremium_v1';
 
-// 무료로 제공하는 테마 3개
 export const FREE_THEMES = ['honeybee', 'blossom', 'ocean'];
 
-// App Store Connect에서 등록한 상품 ID와 반드시 일치해야 함
 export const PRODUCTS = {
   LIFETIME: 'com.elizlee.babyreport.premium_lifetime',
   YEARLY: 'com.elizlee.babyreport.premium_yearly',
 };
+
+// Expo Go에서는 네이티브 모듈 없음 → lazy require로 안전하게 처리
+function getIAP() {
+  try {
+    const { NativeModules } = require('react-native');
+    if (!NativeModules.ExpoIap) return null;
+    const mod = require('expo-iap');
+    if (!mod?.initConnection) return null;
+    return mod;
+  } catch (_) {
+    return null;
+  }
+}
+
+// ── 프리미엄 상태 ─────────────────────────────
 
 export async function isPremium() {
   try {
@@ -46,16 +53,14 @@ export async function canUseTheme(themeKey) {
   return await isPremium();
 }
 
-// ── 실제 IAP 결제 ──────────────────────────────
+// ── 실제 IAP (개발 빌드에서만 동작) ──────────────
 
 export async function getProducts() {
   try {
     const IAP = getIAP();
     if (!IAP) return [];
     await IAP.initConnection();
-    const results = await IAP.fetchProducts({
-      skus: [PRODUCTS.LIFETIME, PRODUCTS.YEARLY],
-    });
+    const results = await IAP.fetchProducts({ skus: [PRODUCTS.LIFETIME, PRODUCTS.YEARLY] });
     return results || [];
   } catch (e) {
     console.error('getProducts error:', e);
@@ -65,7 +70,7 @@ export async function getProducts() {
 
 export async function purchaseProduct(productId) {
   const IAP = getIAP();
-  if (!IAP) throw new Error('In-app purchases not available in Expo Go. Please use a development build.');
+  if (!IAP) throw new Error('개발 빌드에서만 결제할 수 있어요.');
   const isSubs = productId === PRODUCTS.YEARLY;
   await IAP.requestPurchase({
     request: { apple: { sku: productId } },
@@ -76,7 +81,7 @@ export async function purchaseProduct(productId) {
 export async function restorePurchases() {
   const IAP = getIAP();
   if (!IAP) return false;
-  const purchases = await IAP.getAvailablePurchases() || [];
+  const purchases = (await IAP.getAvailablePurchases()) || [];
   const hasPremium = purchases.some(
     item => item.productId === PRODUCTS.LIFETIME || item.productId === PRODUCTS.YEARLY
   );
@@ -89,4 +94,16 @@ export async function disconnectIAP() {
     const IAP = getIAP();
     if (IAP) await IAP.endConnection();
   } catch (_) {}
+}
+
+export function addPurchaseListener(callback) {
+  const IAP = getIAP();
+  if (!IAP) return { remove: () => {} };
+  return IAP.purchaseUpdatedListener(async (purchase) => {
+    if (!purchase) return;
+    try {
+      await IAP.finishTransaction({ purchase, isConsumable: false });
+    } catch (_) {}
+    callback(purchase);
+  });
 }
