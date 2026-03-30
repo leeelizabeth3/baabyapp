@@ -69,10 +69,12 @@ export async function getProducts() {
 export async function purchaseProduct(productId) {
   const IAP = getIAP();
   if (!IAP) throw new Error('개발 빌드에서만 결제할 수 있어요.');
-  const isSubs = productId === PRODUCTS.YEARLY;
   await IAP.requestPurchase({
-    request: { apple: { sku: productId } },
-    type: isSubs ? 'subs' : 'in-app',
+    request: {
+      apple: { sku: productId },
+      google: { skus: [productId] },
+    },
+    type: productId === PRODUCTS.YEARLY ? 'subs' : 'in-app',
   });
 }
 

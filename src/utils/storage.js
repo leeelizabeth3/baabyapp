@@ -11,8 +11,8 @@ const KEYS = {
 export async function getBabyProfile() {
   try {
     const json = await AsyncStorage.getItem(KEYS.BABY_PROFILE);
-    return json ? JSON.parse(json) : { name: '', gender: 'girl' };
-  } catch { return { name: '', gender: 'girl' }; }
+    return json ? JSON.parse(json) : { name: '', gender: 'girl', birthdate: '' };
+  } catch { return { name: '', gender: 'girl', birthdate: '' }; }
 }
 
 export async function saveBabyProfile(profile) {

@@ -8,6 +8,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Notifications from 'expo-notifications';
 import { captureRef } from 'react-native-view-shot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,9 +19,38 @@ import {
 } from '../components/UI';
 import { THEME_LIST, THEMES } from '../data/themes';
 import { MILESTONES } from '../data/milestones';
-import { saveAlbumRecord } from '../utils/storage';
+import { saveAlbumRecord, getBabyProfile, saveBabyProfile } from '../utils/storage';
 import { canUseTheme, isThemeFree, isPremium } from '../utils/purchase';
 import PremiumScreen from './PremiumScreen';
+
+// ── 100일 알림 스케줄 ──────────────────────────
+async function schedule100DayNotification(babyName, birthdateStr) {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
+
+    const birth = new Date(birthdateStr);
+    const day100 = new Date(birth);
+    day100.setDate(day100.getDate() + 99); // 생후 1일이 0일이므로 99일 더함
+    day100.setHours(9, 0, 0, 0);
+
+    const now = new Date();
+    if (day100 <= now) return; // 이미 지난 경우
+
+    // 기존 백일 알림 취소 후 재등록
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `🎂 ${babyName || '아기'} 백일이에요!`,
+        body: '오늘 백일을 축하해요! 특별한 백일카드를 만들어보세요 🍼',
+        sound: true,
+      },
+      trigger: { type: 'date', date: day100 },
+    });
+  } catch (e) {
+    console.log('알림 설정 실패:', e.message);
+  }
+}
 
 const { width: SW } = Dimensions.get('window');
 const CARD_WIDTH = SW - 32;
@@ -101,6 +131,11 @@ export default function CardMakerScreen() {
 
   useFocusEffect(useCallback(() => {
     isPremium().then(setUserIsPremium);
+    // 저장된 생년월일 불러오기
+    getBabyProfile().then(profile => {
+      if (profile.birthdate && !birthdate) setBirthdate(profile.birthdate);
+      if (profile.name && !name) setName(profile.name);
+    });
   }, []));
   const ageInfo = useMemo(() => {
     if (!birthdate) return null;
@@ -202,7 +237,15 @@ export default function CardMakerScreen() {
           <Card>
             <RowFields>
               <FormField label="아기 이름" style={{ flex: 1 }}>
-                <StyledInput value={name} onChangeText={setName} placeholder="예: 하엘" />
+                <StyledInput
+                  value={name}
+                  onChangeText={async (text) => {
+                    setName(text);
+                    const profile = await getBabyProfile();
+                    await saveBabyProfile({ ...profile, name: text });
+                  }}
+                  placeholder="예: 하엘"
+                />
               </FormField>
               <FormField label="생년월일" style={{ flex: 1 }}>
                 <TouchableOpacity style={styles.dateBtn} onPress={() => setShowBirthPicker(true)}>
@@ -217,9 +260,16 @@ export default function CardMakerScreen() {
                     mode="date"
                     display="compact"
                     maximumDate={new Date()}
-                    onChange={(event, date) => {
+                    onChange={async (event, date) => {
                       setShowBirthPicker(false);
-                      if (date) setBirthdate(date.toISOString().split('T')[0]);
+                      if (date) {
+                        const dateStr = date.toISOString().split('T')[0];
+                        setBirthdate(dateStr);
+                        // 저장 + 100일 알림 예약
+                        const profile = await getBabyProfile();
+                        await saveBabyProfile({ ...profile, birthdate: dateStr, name: name || profile.name });
+                        await schedule100DayNotification(name, dateStr);
+                      }
                     }}
                   />
                 )}

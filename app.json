@@ -29,6 +29,16 @@
     "updates": {
       "url": "https://u.expo.dev/29792449-cf4b-4e15-a13f-1b3eba9f4d91"
     },
-    "android": {}
+    "android": {},
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#FFE070",
+          "sounds": []
+        }
+      ]
+    ]
   }
 }
