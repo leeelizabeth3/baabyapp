@@ -5,11 +5,20 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 
 import CardMakerScreen from './src/screens/CardMakerScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
 import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const Tab = createBottomTabNavigator();
 
