@@ -7,6 +7,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { AppHeader, EmptyState, COLORS } from '../components/UI';
 import { getAlbum, deleteAlbumRecord } from '../utils/storage';
@@ -14,6 +15,14 @@ import { getAlbum, deleteAlbumRecord } from '../utils/storage';
 const { width: SW } = Dimensions.get('window');
 
 const MONTH_EMOJIS = ['🍼','🌱','🌸','🌼','🌻','🌾','🍂','🍁','❄️','⛄','🌈','🌙','🎂'];
+
+// iOS documentDirectory UUID가 앱 재시작마다 바뀔 수 있어서
+// 저장된 경로에서 파일명만 추출해 현재 경로로 재조합
+function resolveUri(record) {
+  if (!record.uri) return null;
+  const fileName = record.fileName || record.uri.split('/').pop();
+  return FileSystem.documentDirectory + fileName;
+}
 
 export default function AlbumScreen() {
   const insets = useSafeAreaInsets();
@@ -90,10 +99,10 @@ export default function AlbumScreen() {
                 <TouchableOpacity
                   key={record.id}
                   style={styles.thumb}
-                  onPress={() => { setLightboxUri(record.uri); setLightboxRecord(record); }}
+                  onPress={() => { setLightboxUri(resolveUri(record)); setLightboxRecord(record); }}
                   activeOpacity={0.9}
                 >
-                  <Image source={{ uri: record.uri }} style={styles.thumbImg} resizeMode="cover" />
+                  <Image source={{ uri: resolveUri(record) }} style={styles.thumbImg} resizeMode="cover" />
                   <View style={styles.thumbOverlay}>
                     <Text style={styles.thumbName}>{record.name} {record.month}개월</Text>
                     <Text style={styles.thumbDate}>{record.date}</Text>

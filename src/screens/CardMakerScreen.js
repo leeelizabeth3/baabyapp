@@ -207,6 +207,7 @@ export default function CardMakerScreen() {
         date: dateStart || new Date().toISOString().split('T')[0],
         theme: selectedTheme,
         uri: permanentUri,
+        fileName: fileName,
       });
 
       Alert.alert('저장 완료! 🎉', '앨범에 저장되었어요!');
