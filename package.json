@@ -8,6 +8,11 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@expo-google-fonts/cute-font": "^0.4.1",
+    "@expo-google-fonts/gaegu": "^0.4.1",
+    "@expo-google-fonts/jua": "^0.4.1",
+    "@expo-google-fonts/nunito": "^0.4.2",
+    "@expo-google-fonts/quicksand": "^0.4.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.6.0",
     "@react-navigation/bottom-tabs": "^6.6.1",
@@ -16,6 +21,7 @@
     "expo": "~55.0.0",
     "expo-dev-client": "~55.0.19",
     "expo-file-system": "^55.0.12",
+    "expo-font": "~55.0.4",
     "expo-iap": "^3.4.13",
     "expo-image-picker": "~55.0.14",
     "expo-media-library": "~55.0.10",
@@ -28,7 +34,7 @@
     "react-native-gesture-handler": "~2.30.0",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.23.0",
-    "react-native-svg": "^15.15.3",
+    "react-native-svg": "15.15.3",
     "react-native-view-shot": "4.0.3"
   },
   "devDependencies": {

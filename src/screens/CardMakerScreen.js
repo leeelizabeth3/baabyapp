@@ -12,7 +12,7 @@ import * as Notifications from 'expo-notifications';
 import { captureRef } from 'react-native-view-shot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-
+import Svg, { Defs, Pattern, Rect, Circle, Path, Polygon } from 'react-native-svg';
 import {
   AppHeader, SectionTitle, Card, PrimaryButton, SecondaryButton,
   FormField, StyledInput, RowFields, COLORS,
@@ -162,7 +162,7 @@ export default function CardMakerScreen() {
     return { days: daysOld, weeks: weeksOld, months: monthsOld, corrected };
   }, [birthdate, isPremature, prematureWeeks]);
 
-  const t = THEMES[selectedTheme];
+  const t = THEMES[selectedTheme] || THEMES['honeybee'];
 
   const pickImage = async () => {
     const { status, accessPrivileges } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -193,6 +193,10 @@ export default function CardMakerScreen() {
       const fileName = `baby_card_${Date.now()}.png`;
       const permanentUri = FileSystem.documentDirectory + fileName;
       await FileSystem.copyAsync({ from: tmpUri, to: permanentUri });
+
+      // Verify the file was actually written before saving the record
+      const fileInfo = await FileSystem.getInfoAsync(permanentUri);
+      if (!fileInfo.exists) throw new Error('파일 저장에 실패했어요.');
 
       // Try saving to photo library (optional — don't fail if denied)
       try {
@@ -300,7 +304,7 @@ export default function CardMakerScreen() {
 
             {ageInfo && (() => {
               const displayMonth = ageInfo.corrected ? ageInfo.corrected.months : ageInfo.months;
-              const ms = MILESTONES[displayMonth];
+              const ms = MILESTONES[Math.min(12, displayMonth)] || MILESTONES[12];
               return (
                 <>
                   <View style={styles.ageBadgeRow}>
@@ -574,6 +578,45 @@ export default function CardMakerScreen() {
 }
 
 // ── Baby Card Component ───────────────────────
+function CardPattern({ pattern, width }) {
+  if (!pattern) return null;
+  const { type, color, opacity, size = 18, r = 2.2 } = pattern;
+  return (
+    <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={width} height="100%">
+      <Defs>
+        {type === 'dots' && (
+          <Pattern id="p" x="0" y="0" width={size} height={size} patternUnits="userSpaceOnUse">
+            <Circle cx={size/2} cy={size/2} r={r} fill={color} opacity={opacity} />
+          </Pattern>
+        )}
+        {type === 'stripes' && (
+          <Pattern id="p" x="0" y="0" width={size} height={size} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <Rect x="0" y="0" width={size/2} height={size} fill={color} opacity={opacity} />
+          </Pattern>
+        )}
+        {type === 'waves' && (
+          <Pattern id="p" x="0" y="0" width="60" height="20" patternUnits="userSpaceOnUse">
+            <Path d="M0 10 Q15 0 30 10 Q45 20 60 10" fill="none" stroke={color} strokeWidth="1.5" opacity={opacity} />
+          </Pattern>
+        )}
+        {type === 'hex' && (
+          <Pattern id="p" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+            <Polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke={color} strokeWidth="1" opacity={opacity} />
+          </Pattern>
+        )}
+        {type === 'stars' && (
+          <Pattern id="p" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+            <Circle cx="8" cy="8" r="1.2" fill={color} opacity={opacity} />
+            <Circle cx="28" cy="18" r="0.8" fill={color} opacity={opacity * 0.7} />
+            <Circle cx="18" cy="32" r="1" fill={color} opacity={opacity * 0.85} />
+            <Circle cx="35" cy="5" r="0.6" fill="#E8D880" opacity={opacity} />
+          </Pattern>
+        )}
+      </Defs>
+      <Rect width="100%" height="100%" fill="url(#p)" />
+    </Svg>
+  );
+}
 const BabyCard = React.forwardRef(function BabyCard(
   { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri },
   ref
@@ -594,6 +637,7 @@ const BabyCard = React.forwardRef(function BabyCard(
 
   return (
     <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW - 32 }]}>
+      <CardPattern pattern={t.pattern} width={SW - 32} />
       {/* Corner decos */}
       <Text style={[cardStyles.deco, { top: 8, left: 12, transform: [{ rotate: '-15deg' }] }]}>{t.emoji[0]}</Text>
       <Text style={[cardStyles.deco, { top: 8, right: 12, transform: [{ rotate: '12deg' }] }]}>{t.emoji[1]}</Text>
@@ -601,7 +645,11 @@ const BabyCard = React.forwardRef(function BabyCard(
       <Text style={[cardStyles.deco, { bottom: 8, right: 12, transform: [{ rotate: '-10deg' }], opacity: 0.7 }]}>{t.emoji[3]}</Text>
 
       {/* Title */}
-      <Text style={[cardStyles.title, { color: t.titleColor }]}>{t.emoji[0]} {name} {month}개월 성장보고서</Text>
+      <Text style={[cardStyles.title, {
+        color: t.titleColor,
+        fontFamily: t.titleFont || undefined,
+        fontWeight: t.titleFont ? undefined : '800',
+      }]}>{t.emoji[0]} {name} {month}개월 성장보고서</Text>
 
       {/* Date pill */}
       {dateStr ? (
@@ -670,7 +718,7 @@ const cardStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   deco: { position: 'absolute', fontSize: 30, zIndex: 1 },
-  title: { fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6, marginTop: 4 },
+  title: { fontSize: 18, textAlign: 'center', marginBottom: 6, marginTop: 4 },
   datePill: {
     alignSelf: 'center', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
     borderWidth: 1.5, marginBottom: 10,

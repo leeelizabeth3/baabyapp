@@ -38,7 +38,8 @@
           "color": "#FFE070",
           "sounds": []
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

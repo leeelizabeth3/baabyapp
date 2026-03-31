@@ -3,14 +3,16 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
+import { useFonts, Nunito_700Bold } from '@expo-google-fonts/nunito';
 
 import CardMakerScreen from './src/screens/CardMakerScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
 import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
+
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -23,6 +25,9 @@ Notifications.setNotificationHandler({
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  const [fontsLoaded] = useFonts({ Nunito_700Bold });
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#FFF8E0' }} />;
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>

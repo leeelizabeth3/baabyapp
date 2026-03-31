@@ -7,6 +7,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
+import Svg, { Circle } from 'react-native-svg';
 
 import { AppHeader, Card, SectionTitle, PrimaryButton, COLORS } from '../components/UI';
 import { WHO_WEIGHT, WHO_HEIGHT, WHO_HEAD, getPercentile, getZone, PCT_MARKS } from '../data/whoData';
@@ -325,6 +326,9 @@ function PctCard({ emoji, label, value, unit, pct }) {
         <View style={[pctStyles.barFill, { width: pct !== null ? `${Math.min(100, pct)}%` : '0%', backgroundColor: barColor }]} />
       </View>
       <Text style={[pctStyles.pctText, { color: textColor }]}>{pct !== null ? `P${pct}` : '--'}</Text>
+      {pct !== null && (
+        <Text style={[pctStyles.topText, { color: textColor }]}>상위 {100 - pct}%</Text>
+      )}
     </View>
   );
 }
@@ -341,13 +345,16 @@ const pctStyles = StyleSheet.create({
   barTrack: { width: '100%', height: 5, backgroundColor: '#F0EBE0', borderRadius: 3, overflow: 'hidden', marginBottom: 4 },
   barFill: { height: '100%', borderRadius: 3 },
   pctText: { fontSize: 13, fontWeight: '800' },
+  topText: { fontSize: 10, fontWeight: '600', opacity: 0.8, marginTop: 1 },
 });
 
 function RecVal({ icon, val, pct }) {
   return (
     <View style={{ marginRight: 10 }}>
       <Text style={{ fontSize: 13, fontWeight: '600', color: '#4A3520' }}>{icon} {val}</Text>
-      {pct !== null && <Text style={{ fontSize: 11, color: '#8A7050' }}>P{pct}</Text>}
+      {pct !== null && (
+        <Text style={{ fontSize: 11, color: '#8A7050' }}>P{pct} · 상위 {100 - pct}%</Text>
+      )}
     </View>
   );
 }
@@ -359,16 +366,28 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
   const p15 = months.map(m => table[gender][m][1]);
   const p85 = months.map(m => table[gender][m][3]);
 
-  // User data (null → undefined for gaps)
+  // Only real data points — no gap filling
   const userData = months.map(m => {
     const r = [...records].reverse().find(rec => rec.month === m && rec[field] !== null);
-    return r ? r[field] : undefined;
+    return r ? r[field] : null;
   });
 
-  // Build chart datasets — only showing P15, P50, P85, and baby for clarity
-  const allVals = [...p15, ...p50, ...p85, ...userData.filter(v => v !== undefined)];
+  const allVals = [...p15, ...p50, ...p85];
   const minVal = Math.min(...allVals) - 1;
   const maxVal = Math.max(...allVals) + 1;
+
+  // Chart dimensions (must match LineChart props below)
+  const chartW = SW - 52;
+  const chartH = 200;
+  const leftPad = 54;   // y-axis label area
+  const rightPad = 12;
+  const topPad = 16;
+  const bottomPad = 30; // x-axis label area
+  const plotW = chartW - leftPad - rightPad;
+  const plotH = chartH - topPad - bottomPad;
+
+  const toX = (m) => leftPad + (m / (months.length - 1)) * plotW;
+  const toY = (val) => topPad + (1 - (val - minVal) / (maxVal - minVal)) * plotH;
 
   const chartData = {
     labels: months.map(m => m === 0 || m % 3 === 0 ? `${m}m` : ''),
@@ -376,11 +395,6 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
       { data: p85, color: () => 'rgba(180,140,80,0.5)', strokeWidth: 1 },
       { data: p50, color: () => color, strokeWidth: 2 },
       { data: p15, color: () => 'rgba(180,140,80,0.5)', strokeWidth: 1 },
-      {
-        data: userData.map(v => v ?? p50[0]), // fill nulls with p50 for chart (won't render without data)
-        color: (opacity = 1) => `rgba(200,50,30,${opacity})`,
-        strokeWidth: 0,
-      },
     ],
   };
 
@@ -388,27 +402,42 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
     <View style={chartStyles.section}>
       <Text style={chartStyles.title}>{title}</Text>
       <View style={chartStyles.wrap}>
-        <LineChart
-          data={chartData}
-          width={SW - 52}
-          height={200}
-          chartConfig={{
-            backgroundColor: '#fff',
-            backgroundGradientFrom: '#fff',
-            backgroundGradientTo: '#fff',
-            decimalPlaces: 1,
-            color: (opacity = 1) => `rgba(90,60,20,${opacity})`,
-            labelColor: (opacity = 1) => `rgba(140,110,70,${opacity})`,
-            propsForDots: { r: '4', strokeWidth: '0' },
-            propsForBackgroundLines: { strokeDasharray: '4', stroke: '#F0EAD8' },
-          }}
-          bezier
-          withDots={false}
-          style={{ borderRadius: 12 }}
-          fromZero={false}
-          yAxisSuffix={` ${unit}`}
-        />
-        {/* Overlay our baby's dots manually */}
+        <View>
+          <LineChart
+            data={chartData}
+            width={chartW}
+            height={chartH}
+            chartConfig={{
+              backgroundColor: '#fff',
+              backgroundGradientFrom: '#fff',
+              backgroundGradientTo: '#fff',
+              decimalPlaces: 1,
+              color: (opacity = 1) => `rgba(90,60,20,${opacity})`,
+              labelColor: (opacity = 1) => `rgba(140,110,70,${opacity})`,
+              propsForDots: { r: '0' },
+              propsForBackgroundLines: { strokeDasharray: '4', stroke: '#F0EAD8' },
+            }}
+            bezier
+            withDots={false}
+            style={{ borderRadius: 12 }}
+            fromZero={false}
+            yAxisSuffix={` ${unit}`}
+          />
+          {/* Overlay real baby data dots only */}
+          <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={chartW} height={chartH}>
+            {userData.map((val, m) => val !== null ? (
+              <Circle
+                key={m}
+                cx={toX(m)}
+                cy={toY(val)}
+                r={5}
+                fill="rgba(200,50,30,1)"
+                stroke="#fff"
+                strokeWidth={1.5}
+              />
+            ) : null)}
+          </Svg>
+        </View>
         <Text style={chartStyles.legendText}>
           — P50 (평균) · — P15/P85 기준선 · 우리 아기 ●
         </Text>

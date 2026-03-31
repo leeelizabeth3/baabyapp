@@ -5,7 +5,7 @@ import {
   Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, restorePurchases, disconnectIAP, PRODUCTS, addPurchaseListener } from '../utils/purchase';
+import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, disconnectIAP, PRODUCTS, addPurchaseListener } from '../utils/purchase';
 import { THEME_LIST } from '../data/themes';
 
 export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
@@ -19,10 +19,11 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
 
     // 실제 상품 가격 불러오기
     getProducts().then(results => {
+      if (!Array.isArray(results)) return;
       const map = {};
-      results.forEach(p => { map[p.productId] = p; });
+      results.forEach(p => { if (p?.productId) map[p.productId] = p; });
       setProducts(map);
-    });
+    }).catch(() => {});
 
     // 결제 완료 리스너
     const subscription = addPurchaseListener(async (purchase) => {
@@ -53,23 +54,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
       if (msg.toLowerCase().includes('cancel')) return;
       Alert.alert('결제 오류', msg || '다시 시도해주세요.');
     }
-  };
-
-  const handleRestore = async () => {
-    setLoading('restore');
-    try {
-      const restored = await restorePurchases();
-      if (restored) {
-        setAlreadyPremium(true);
-        Alert.alert('복원 완료! 🎉', '프리미엄이 복원되었어요!');
-        onPurchaseSuccess?.();
-      } else {
-        Alert.alert('복원할 구매 없음', '아직 프리미엄을 구매하지 않으셨어요.');
-      }
-    } catch {
-      Alert.alert('오류', '복원 중 문제가 생겼어요.');
-    }
-    setLoading(null);
   };
 
   const premiumThemes = THEME_LIST.filter(t => !FREE_THEMES.includes(t.key));
@@ -149,7 +133,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         {/* 구매 버튼 */}
         <TouchableOpacity
           style={styles.buyBtn}
-          onPress={() => handlePurchase('lifetime')}
+          onPress={handlePurchase}
           disabled={!!loading}
         >
           {loading === 'lifetime'
@@ -157,17 +141,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
             : <Text style={styles.buyBtnText}>
                 {products[PRODUCTS.LIFETIME]?.displayPrice ?? '$2.99'} — 지금 구매하기 ✨
               </Text>
-          }
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.restoreBtn}
-          onPress={handleRestore}
-          disabled={!!loading}
-        >
-          {loading === 'restore'
-            ? <ActivityIndicator color="#A09070" size="small" />
-            : <Text style={styles.restoreBtnText}>구매 복원하기</Text>
           }
         </TouchableOpacity>
 
@@ -246,8 +219,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buyBtnText: { fontSize: 16, fontWeight: '800', color: '#5A3A10' },
-  restoreBtn: { alignItems: 'center', paddingVertical: 10 },
-  restoreBtnText: { fontSize: 13, color: '#A09070', textDecorationLine: 'underline' },
   laterBtn: { alignItems: 'center', paddingVertical: 10 },
   laterBtnText: { fontSize: 14, color: '#A09070' },
   closeBtn: {

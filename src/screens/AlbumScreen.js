@@ -18,21 +18,31 @@ const MONTH_EMOJIS = ['🍼','🌱','🌸','🌼','🌻','🌾','🍂','🍁','�
 
 // iOS documentDirectory UUID가 앱 재시작마다 바뀔 수 있어서
 // 저장된 경로에서 파일명만 추출해 현재 경로로 재조합
-function resolveUri(record) {
+async function resolveUri(record) {
   if (!record.uri) return null;
   const fileName = record.fileName || record.uri.split('/').pop();
-  return FileSystem.documentDirectory + fileName;
+  const uri = FileSystem.documentDirectory + fileName;
+  const info = await FileSystem.getInfoAsync(uri);
+  return info.exists ? uri : null;
 }
 
 export default function AlbumScreen() {
   const insets = useSafeAreaInsets();
   const [album, setAlbum] = useState([]);
+  const [resolvedUris, setResolvedUris] = useState({});
   const [lightboxUri, setLightboxUri] = useState(null);
   const [lightboxRecord, setLightboxRecord] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
-      getAlbum().then(setAlbum);
+      getAlbum().then(async (records) => {
+        setAlbum(records);
+        const uris = {};
+        await Promise.all(records.map(async (r) => {
+          uris[r.id] = await resolveUri(r);
+        }));
+        setResolvedUris(uris);
+      });
     }, [])
   );
 
@@ -44,6 +54,7 @@ export default function AlbumScreen() {
         onPress: async () => {
           const updated = await deleteAlbumRecord(id);
           setAlbum(updated);
+          setResolvedUris(prev => { const next = { ...prev }; delete next[id]; return next; });
         },
       },
     ]);
@@ -99,10 +110,10 @@ export default function AlbumScreen() {
                 <TouchableOpacity
                   key={record.id}
                   style={styles.thumb}
-                  onPress={() => { setLightboxUri(resolveUri(record)); setLightboxRecord(record); }}
+                  onPress={() => { setLightboxUri(resolvedUris[record.id]); setLightboxRecord(record); }}
                   activeOpacity={0.9}
                 >
-                  <Image source={{ uri: resolveUri(record) }} style={styles.thumbImg} resizeMode="cover" />
+                  <Image source={{ uri: resolvedUris[record.id] }} style={styles.thumbImg} resizeMode="cover" />
                   <View style={styles.thumbOverlay}>
                     <Text style={styles.thumbName}>{record.name} {record.month}개월</Text>
                     <Text style={styles.thumbDate}>{record.date}</Text>
@@ -123,15 +134,17 @@ export default function AlbumScreen() {
       )}
 
       {/* Lightbox */}
-      <Modal visible={!!lightboxUri} transparent animationType="fade" onRequestClose={() => setLightboxUri(null)}>
-        <TouchableOpacity style={styles.lbBg} activeOpacity={1} onPress={() => setLightboxUri(null)}>
+      <Modal visible={!!lightboxUri} transparent animationType="fade" onRequestClose={() => { setLightboxUri(null); setLightboxRecord(null); }}>
+        <TouchableOpacity style={styles.lbBg} activeOpacity={1} onPress={() => { setLightboxUri(null); setLightboxRecord(null); }}>
           <View style={styles.lbInner} onStartShouldSetResponder={() => true}>
-            <Image source={{ uri: lightboxUri }} style={styles.lbImg} resizeMode="contain" />
+            {lightboxUri ? (
+              <Image source={{ uri: lightboxUri }} style={styles.lbImg} resizeMode="contain" />
+            ) : null}
             <View style={styles.lbButtons}>
               <TouchableOpacity style={styles.lbBtn} onPress={() => handleDownload(lightboxUri)}>
                 <Text style={styles.lbBtnText}>💾 사진첩에 저장</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.lbBtn, { backgroundColor: '#DDD', marginLeft: 10 }]} onPress={() => setLightboxUri(null)}>
+              <TouchableOpacity style={[styles.lbBtn, { backgroundColor: '#DDD', marginLeft: 10 }]} onPress={() => { setLightboxUri(null); setLightboxRecord(null); }}>
                 <Text style={[styles.lbBtnText, { color: '#555' }]}>닫기</Text>
               </TouchableOpacity>
             </View>
