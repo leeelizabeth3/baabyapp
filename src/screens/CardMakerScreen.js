@@ -3,7 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
-  StyleSheet, Alert, Dimensions, Platform, Modal,
+  StyleSheet, Alert, Dimensions, Platform, Modal, Share,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -108,8 +108,6 @@ export default function CardMakerScreen() {
   const [heightEnd, setHeightEnd] = useState('');
   const [weightStart, setWeightStart] = useState('');
   const [weightEnd, setWeightEnd] = useState('');
-  const [headStart, setHeadStart] = useState('');
-  const [headEnd, setHeadEnd] = useState('');
   const [clothes, setClothes] = useState('');
   const [sleep, setSleep] = useState('');
   const [feeding, setFeeding] = useState('');
@@ -223,11 +221,29 @@ export default function CardMakerScreen() {
     setSaving(false);
   };
 
+  const shareCard = async () => {
+    if (!cardRef.current) return;
+    setSaving(true);
+    try {
+      const tmpUri = await captureRef(cardRef, { format: 'png', quality: 1, result: 'tmpfile' });
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { url: tmpUri }
+          : { message: '아기 성장보고서', title: '아기 성장보고서' },
+        { dialogTitle: '카드 공유하기' }
+      );
+    } catch (e) {
+      if (e.message !== 'The user canceled the action') {
+        Alert.alert('오류', '공유 중 오류가 발생했어요: ' + e.message);
+      }
+    }
+    setSaving(false);
+  };
+
   // Build display strings
   const hwStr = [
     (heightStart || heightEnd) ? `키 ${heightStart || '?'}cm${heightEnd ? ' → ' + heightEnd + 'cm' : ''}` : null,
     (weightStart || weightEnd) ? `몸무게 ${weightStart || '?'}kg${weightEnd ? ' → ' + weightEnd + 'kg' : ''}` : null,
-    (headStart || headEnd) ? `머리둘레 ${headStart || '?'}cm${headEnd ? ' → ' + headEnd + 'cm' : ''}` : null,
   ].filter(Boolean).join('\n');
 
   const dateStr = dateStart && dateEnd
@@ -244,7 +260,8 @@ export default function CardMakerScreen() {
           <SectionTitle>🧮 아기 나이 계산기</SectionTitle>
           <Card>
             <RowFields>
-              <FormField label="아기 이름" style={{ flex: 1 }}>
+              <View style={[styles.inlineField, { flex: 1 }]}>
+                <Text style={styles.inlineLabel}>이름</Text>
                 <StyledInput
                   value={name}
                   onChangeText={async (text) => {
@@ -253,10 +270,12 @@ export default function CardMakerScreen() {
                     await saveBabyProfile({ ...profile, name: text });
                   }}
                   placeholder="예: 제니"
+                  style={{ flex: 1 }}
                 />
-              </FormField>
-              <FormField label="생년월일" style={{ flex: 1 }}>
-                <TouchableOpacity style={styles.dateBtn} onPress={() => setShowBirthPicker(true)}>
+              </View>
+              <View style={[styles.inlineField, { flex: 1 }]}>
+                <Text style={styles.inlineLabel}>생년월일</Text>
+                <TouchableOpacity style={[styles.dateBtnInline, { flex: 1 }]} onPress={() => setShowBirthPicker(true)}>
                   <Text style={birthdate ? styles.dateBtnText : styles.dateBtnPlaceholder}>
                     {birthdate || '날짜 선택'}
                   </Text>
@@ -281,7 +300,7 @@ export default function CardMakerScreen() {
                     }}
                   />
                 )}
-              </FormField>
+              </View>
             </RowFields>
 
             <TouchableOpacity style={styles.premToggle} onPress={() => setIsPremature(v => !v)}>
@@ -309,16 +328,13 @@ export default function CardMakerScreen() {
                 <>
                   <View style={styles.ageBadgeRow}>
                     <View style={styles.ageBadge}>
-                      <Text style={styles.ageBadgeNum}>{ageInfo.days}</Text>
-                      <Text style={styles.ageBadgeLabel}>일</Text>
+                      <Text style={styles.ageBadgeNum}>{ageInfo.days}<Text style={styles.ageBadgeLabel}> 일</Text></Text>
                     </View>
                     <View style={styles.ageBadge}>
-                      <Text style={styles.ageBadgeNum}>{ageInfo.weeks}</Text>
-                      <Text style={styles.ageBadgeLabel}>주</Text>
+                      <Text style={styles.ageBadgeNum}>{ageInfo.weeks}<Text style={styles.ageBadgeLabel}> 주</Text></Text>
                     </View>
                     <View style={[styles.ageBadge, styles.ageBadgeMain]}>
-                      <Text style={[styles.ageBadgeNum, styles.ageBadgeNumMain]}>{ageInfo.months}</Text>
-                      <Text style={[styles.ageBadgeLabel, styles.ageBadgeLabelMain]}>개월</Text>
+                      <Text style={[styles.ageBadgeNum, styles.ageBadgeNumMain]}>{ageInfo.months}<Text style={[styles.ageBadgeLabel, styles.ageBadgeLabelMain]}> 개월</Text></Text>
                     </View>
                   </View>
 
@@ -350,9 +366,12 @@ export default function CardMakerScreen() {
         <View style={styles.sec}>
           <SectionTitle>👶 기본 정보</SectionTitle>
           <Card>
-            <FormField label="개월 수 (카드용)">
-              <MonthDropdown value={month} onChange={setMonth} />
-            </FormField>
+            <View style={styles.inlineField}>
+              <Text style={styles.inlineLabel}>개월 수</Text>
+              <View style={{ flex: 1 }}>
+                <MonthDropdown value={month} onChange={setMonth} />
+              </View>
+            </View>
             <RowFields>
               <FormField label="시작일" style={{ flex: 1 }}>
                 <TouchableOpacity
@@ -404,7 +423,7 @@ export default function CardMakerScreen() {
 
         {/* ── 키/몸무게 ── */}
         <View style={styles.sec}>
-          <SectionTitle>📐 키 / 몸무게 / 머리둘레</SectionTitle>
+          <SectionTitle>📐 키 / 몸무게</SectionTitle>
           <Card>
             <RowFields>
               <FormField label="시작 키(cm)" style={{ flex: 1 }}>
@@ -420,14 +439,6 @@ export default function CardMakerScreen() {
               </FormField>
               <FormField label="끝 몸무게(kg)" style={{ flex: 1 }}>
                 <StyledInput value={weightEnd} onChangeText={setWeightEnd} placeholder="4.0" keyboardType="decimal-pad" />
-              </FormField>
-              </RowFields>
-              <RowFields>
-              <FormField label="시작 머리둘레(cm)" style={{ flex: 1 }}>
-                <StyledInput value={headStart} onChangeText={setHeadStart} placeholder="33" keyboardType="decimal-pad" />
-              </FormField>
-              <FormField label="끝 머리둘레(cm)" style={{ flex: 1 }}>
-                <StyledInput value={headEnd} onChangeText={setHeadEnd} placeholder="36" keyboardType="decimal-pad" />
               </FormField>
             </RowFields>
           </Card>
@@ -568,6 +579,9 @@ export default function CardMakerScreen() {
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
               {saving ? '저장 중...' : '💾 사진첩 & 앨범에 저장하기'}
             </SecondaryButton>
+            <SecondaryButton onPress={shareCard} style={[{ marginTop: 8, backgroundColor: '#4A90D9', borderColor: '#2E70B8' }, saving ? { opacity: 0.7 } : {}]}>
+              {saving ? '처리 중...' : '📤 인스타·카카오톡·페이스북 공유'}
+            </SecondaryButton>
           </View>
         )}
 
@@ -660,7 +674,7 @@ const BabyCard = React.forwardRef(function BabyCard(
 
       {/* TOP ROW: 키/몸무게 | 접종내역 | 옷사이즈 */}
       <View style={cardStyles.row}>
-        <InfoBlock tag="📐 키/몸무게/머리둘레" content={hwStr} />
+        <InfoBlock tag="📐 키/몸무게" content={hwStr} />
         <View style={{ width: 6 }} />
         <InfoBlock tag="💉 접종내역" content={vaccine} />
         <View style={{ width: 6 }} />
@@ -748,6 +762,17 @@ const cardStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  inlineField: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
+    backgroundColor: '#FFFDF5', paddingHorizontal: 10, paddingVertical: 2,
+    marginBottom: 10,
+  },
+  inlineLabel: { fontSize: 11, color: '#A08050', fontWeight: '600', marginRight: 6, flexShrink: 0 },
+  dateBtnInline: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
   dateBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
@@ -767,8 +792,7 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#5A3A10', fontWeight: '700' },
   dropdownBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
-    backgroundColor: '#FFFDF5', paddingHorizontal: 14, paddingVertical: 10,
+    paddingHorizontal: 4, paddingVertical: 8,
   },
   dropdownBtnText: { fontSize: 14, fontWeight: '600', color: '#5A3A10' },
   dropdownArrow: { fontSize: 10, color: '#A09070', marginLeft: 6 },
@@ -827,17 +851,17 @@ const styles = StyleSheet.create({
   checkboxActive: { backgroundColor: '#C87820', borderColor: '#C87820' },
   premToggleText: { fontSize: 13, color: '#6A5030', fontWeight: '500' },
   ageBadgeRow: {
-    flexDirection: 'row', gap: 8, marginTop: 12, marginBottom: 8, justifyContent: 'center',
+    flexDirection: 'row', gap: 6, marginTop: 12, marginBottom: 8, justifyContent: 'center',
   },
   ageBadge: {
     flex: 1, alignItems: 'center', backgroundColor: '#FFF8E8',
-    borderRadius: 12, paddingVertical: 10, borderWidth: 1.5, borderColor: '#EAD9C0',
+    borderRadius: 10, paddingVertical: 7, borderWidth: 1.5, borderColor: '#EAD9C0',
   },
   ageBadgeMain: { backgroundColor: '#FFF0A0', borderColor: '#E8C020' },
-  ageBadgeNum: { fontSize: 22, fontWeight: '800', color: '#7A5020' },
-  ageBadgeNumMain: { fontSize: 26, color: '#B07010' },
-  ageBadgeLabel: { fontSize: 11, color: '#A08050', fontWeight: '600', marginTop: 1 },
-  ageBadgeLabelMain: { fontSize: 12, color: '#C87820', fontWeight: '700' },
+  ageBadgeNum: { fontSize: 16, fontWeight: '800', color: '#7A5020' },
+  ageBadgeNumMain: { fontSize: 18, color: '#B07010' },
+  ageBadgeLabel: { fontSize: 12, color: '#A08050', fontWeight: '600' },
+  ageBadgeLabelMain: { fontSize: 13, color: '#C87820', fontWeight: '700' },
   correctedBox: {
     backgroundColor: '#EEF8FF', borderRadius: 10, padding: 12,
     borderWidth: 1.5, borderColor: '#B8D8F0', marginBottom: 10, alignItems: 'center',

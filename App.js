@@ -12,6 +12,7 @@ import CardMakerScreen from './src/screens/CardMakerScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
 import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
+import CelebrationScreen from './src/screens/CelebrationScreen';
 
 
 Notifications.setNotificationHandler({
@@ -73,6 +74,14 @@ export default function App() {
             options={{
               tabBarLabel: '성장 추적',
               tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📈</Text>,
+            }}
+          />
+          <Tab.Screen
+            name="Celebration"
+            component={CelebrationScreen}
+            options={{
+              tabBarLabel: '기념일',
+              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>🎊</Text>,
             }}
           />
           <Tab.Screen
