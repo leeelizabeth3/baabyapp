@@ -22,7 +22,11 @@ import { MILESTONES } from '../data/milestones';
 import { saveAlbumRecord, getBabyProfile, saveBabyProfile } from '../utils/storage';
 import { canUseTheme, isThemeFree, isPremium } from '../utils/purchase';
 import PremiumScreen from './PremiumScreen';
-
+const FONTS = {
+  cute: 'GamjaFlower_400Regular',
+  melody: 'HiMelody_400Regular',
+  cuteFont: 'CuteFont_400Regular',
+};
 // ── 100일 알림 스케줄 ──────────────────────────
 async function schedule100DayNotification(babyName, birthdateStr) {
   try {
@@ -202,7 +206,7 @@ export default function CardMakerScreen() {
         if (status === 'granted') {
           await MediaLibrary.createAssetAsync(tmpUri);
         }
-      } catch (_) {}
+      } catch (_) { }
 
       await saveAlbumRecord({
         id: Date.now(),
@@ -562,6 +566,7 @@ export default function CardMakerScreen() {
             <BabyCard
               ref={cardRef}
               theme={t}
+              themeName={selectedTheme}
               name={name || '아기'}
               month={month}
               dateStr={dateStr}
@@ -600,12 +605,12 @@ function CardPattern({ pattern, width }) {
       <Defs>
         {type === 'dots' && (
           <Pattern id="p" x="0" y="0" width={size} height={size} patternUnits="userSpaceOnUse">
-            <Circle cx={size/2} cy={size/2} r={r} fill={color} opacity={opacity} />
+            <Circle cx={size / 2} cy={size / 2} r={r} fill={color} opacity={opacity} />
           </Pattern>
         )}
         {type === 'stripes' && (
           <Pattern id="p" x="0" y="0" width={size} height={size} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <Rect x="0" y="0" width={size/2} height={size} fill={color} opacity={opacity} />
+            <Rect x="0" y="0" width={size / 2} height={size} fill={color} opacity={opacity} />
           </Pattern>
         )}
         {type === 'waves' && (
@@ -632,9 +637,10 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName },
   ref
 ) {
+  const ff = themeName === 'blossom' ? 'GamjaFlower_400Regular' : undefined;
   const cardW = SW - 32;
 
   function InfoBlock({ tag, content, flex }) {
@@ -642,9 +648,9 @@ const BabyCard = React.forwardRef(function BabyCard(
     return (
       <View style={[cardStyles.infoBlock, { flex: flex || 1, backgroundColor: t.ibBg, borderColor: t.ibBorder }]}>
         <View style={[cardStyles.infoTag, { backgroundColor: t.tagBg }]}>
-          <Text style={[cardStyles.infoTagText, { color: t.tagColor }]}>{tag}</Text>
+          <Text style={[cardStyles.infoTagText, { color: t.tagColor, fontFamily: ff }]}>{tag}</Text>
         </View>
-        <Text style={[cardStyles.infoBody, t.dark && { color: 'rgba(255,255,255,0.88)' }]}>{content}</Text>
+        <Text style={[cardStyles.infoBody, { fontFamily: ff }, t.dark && { color: 'rgba(255,255,255,0.88)' }]}>{content}</Text>
       </View>
     );
   }
@@ -661,10 +667,15 @@ const BabyCard = React.forwardRef(function BabyCard(
       {/* Title */}
       <Text style={[cardStyles.title, {
         color: t.titleColor,
-        fontFamily: t.titleFont || undefined,
-        fontWeight: t.titleFont ? undefined : '800',
-      }]}>{t.emoji[0]} {name} {month}개월 성장보고서</Text>
-
+        fontFamily: t.titleFont
+          ? t.titleFont
+          : selectedTheme === 'blossom'   // ← blossom이면 cute 폰트
+            ? FONTS.cute
+            : undefined,
+        fontWeight: (t.titleFont || selectedTheme === 'blossom') ? undefined : '800',
+      }]}>
+        {t.emoji[0]} {name} {month}개월 성장보고서
+      </Text>
       {/* Date pill */}
       {dateStr ? (
         <View style={[cardStyles.datePill, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
@@ -732,7 +743,7 @@ const cardStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   deco: { position: 'absolute', fontSize: 30, zIndex: 1 },
-  title: { fontSize: 18, textAlign: 'center', marginBottom: 6, marginTop: 4 },
+  title: { fontSize: 19, textAlign: 'center', marginBottom: 6, marginTop: 4 },
   datePill: {
     alignSelf: 'center', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
     borderWidth: 1.5, marginBottom: 10,

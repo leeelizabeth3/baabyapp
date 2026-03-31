@@ -17,7 +17,12 @@ import {
 import { getBabyProfile } from '../utils/storage';
 
 const { width: SW } = Dimensions.get('window');
-
+// 파일 상단에 폰트 상수 추가
+const FONTS = {
+  cute: 'GamjaFlower_400Regular',   // 귀여움
+  melody: 'HiMelody_400Regular',    // 손글씨 감성
+  cuteFont: 'CuteFont_400Regular',  // 아기자기
+};
 // ── 날짜 계산 헬퍼 ─────────────────────────────
 function calcMilestones(birthdate) {
   if (!birthdate) return null;
@@ -35,7 +40,7 @@ function calcMilestones(birthdate) {
   return [
     { label: '100일', emoji: '🎂', date: day100, daysLeft: diff(day100) },
     { label: '200일', emoji: '🌟', date: day200, daysLeft: diff(day200) },
-    { label: '돌',    emoji: '🎉', date: dol,    daysLeft: diff(dol) },
+    { label: '돌', emoji: '🎉', date: dol, daysLeft: diff(dol) },
   ];
 }
 
@@ -45,8 +50,8 @@ function formatDate(date) {
 
 const INVITE_THEMES = {
   yellow: { bg: '#FFFDF5', accent: '#C8860A', accentLight: '#FDEEB0', titleColor: '#8B5E0A', flower: '🌼', sub: '#B8A060' },
-  pink:   { bg: '#FDF5F7', accent: '#C8506A', accentLight: '#FFD0DC', titleColor: '#A03050', flower: '🌸', sub: '#C08090' },
-  sky:    { bg: '#F5F9FD', accent: '#3A7EC8', accentLight: '#C8E4FF', titleColor: '#2A5EA0', flower: '🩵', sub: '#7AAAD0' },
+  pink: { bg: '#FDF5F7', accent: '#C8506A', accentLight: '#FFD0DC', titleColor: '#A03050', flower: '🌸', sub: '#C08090' },
+  sky: { bg: '#F5F9FD', accent: '#3A7EC8', accentLight: '#C8E4FF', titleColor: '#2A5EA0', flower: '🩵', sub: '#7AAAD0' },
 };
 
 // ── 돌잔치 전용 카드 ──────────────────────────────
@@ -59,39 +64,41 @@ const DolCard = React.forwardRef(function DolCard(
   const cx = cardW / 2;
 
   const bgImage =
-    theme === 'sky'    ? require('../../assets/blue_dol.png') :
-    theme === 'yellow' ? require('../../assets/yellow_dol.png') :
-                         require('../../assets/pink_dol.png');
+    theme === 'sky' ? require('../../assets/blue_dol.png') :
+      theme === 'yellow' ? require('../../assets/yellow_dol.png') :
+        require('../../assets/pink_dol.png');
 
   const themeColor =
-    theme === 'sky'    ? '#1E5FA8' :
-    theme === 'yellow' ? '#C8860A' :
-                         '#C07890';
+    theme === 'sky' ? '#1E5FA8' :
+      theme === 'yellow' ? '#C8860A' :
+        '#C07890';
 
   // 하늘색 테마는 사진 동그랗게·조금 작게, 텍스트 아래로
-  const isSky    = theme === 'sky';
+  const isSky = theme === 'sky';
   const isYellow = theme === 'yellow';
-  const photoSize   = isSky ? cardW * 0.62  : null;          // 정사각형 → 완전한 원
-  const photoTop    = isSky ? cardH * 0.23  : cardH * 0.22;
+  const isPink = theme === 'pink';   // ← 추가
+  const ff = isPink ? 'GamjaFlower_400Regular' : undefined;  // ← 추가
+  const photoSize = isSky ? cardW * 0.62 : null;          // 정사각형 → 완전한 원
+  const photoTop = isSky ? cardH * 0.23 : cardH * 0.22;
   const photoOffsetX = isSky ? cardW * 0.02 : 0;
-  const photoW      = isSky ? photoSize     : cardW * 0.68;
-  const photoH      = isSky ? photoSize     : cardH * 0.35;  // sky: 가로=세로 → 원
-  const titleTop    = isSky    ? null          :
-                      isYellow ? cardH * 0.10  : cardH * 0.635;  // yellow: 사진 위 맨 위
-  const dividerY    = isSky    ? cardH * 0.745 :
-                      isYellow ? cardH * 0.60 : cardH * 0.695;
-  const dateY       = isSky    ? cardH * 0.790 :
-                      isYellow ? cardH * 0.65 : cardH * 0.788;
-  const msgY        = isSky    ? cardH * 0.835 :
-                      isYellow ? cardH * 0.70 : cardH * 0.745;
-  const venueY      = isSky    ? cardH * 0.876 :
-                      isYellow ? cardH * 0.74 : cardH * 0.825;
-  const parentsY    = isSky    ? cardH * 0.910 :
-                      isYellow ? cardH * 0.78 : cardH * 0.865;
-  const dotsY       = isSky    ? cardH * 0.928 :
-                      isYellow ? cardH * 0.835 : cardH * 0.88;
-  const footerY     = isSky    ? cardH * 0.962 :
-                      isYellow ? cardH * 0.890 : cardH * 0.935;
+  const photoW = isSky ? photoSize : cardW * 0.68;
+  const photoH = isSky ? photoSize : cardH * 0.35;  // sky: 가로=세로 → 원
+  const titleTop = isSky ? null :
+    isYellow ? cardH * 0.10 : cardH * 0.635;  // yellow: 사진 위 맨 위
+  const dividerY = isSky ? cardH * 0.745 :
+    isYellow ? cardH * 0.60 : cardH * 0.695;
+  const dateY = isSky ? cardH * 0.790 :
+    isYellow ? cardH * 0.65 : cardH * 0.788;
+  const msgY = isSky ? cardH * 0.835 :
+    isYellow ? cardH * 0.70 : cardH * 0.745;
+  const venueY = isSky ? cardH * 0.876 :
+    isYellow ? cardH * 0.74 : cardH * 0.825;
+  const parentsY = isSky ? cardH * 0.910 :
+    isYellow ? cardH * 0.78 : cardH * 0.865;
+  const dotsY = isSky ? cardH * 0.928 :
+    isYellow ? cardH * 0.835 : cardH * 0.88;
+  const footerY = isSky ? cardH * 0.962 :
+    isYellow ? cardH * 0.890 : cardH * 0.935;
 
   return (
     <View
@@ -131,7 +138,7 @@ const DolCard = React.forwardRef(function DolCard(
       }}>
         {photoUri
           ? <Image source={{ uri: photoUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-          : <Text style={{ fontSize: 48 }}>👶</Text>
+          : <Text style={{ fontSize: 49 }}>👶</Text>
         }
       </View>
 
@@ -145,22 +152,22 @@ const DolCard = React.forwardRef(function DolCard(
 
         {/* 날짜·시간 */}
         {(eventDate || eventTime) ? (
-          <SvgText x={cx} y={dateY} textAnchor="middle" fontSize={cardW * 0.038}
-            fontWeight="700" fill={themeColor} letterSpacing={2}>
+          <SvgText x={cx} y={dateY} textAnchor="middle" fontSize={cardW * 0.042}
+            fontWeight="700" fontFamily={ff} fill={themeColor} letterSpacing={2}>
             {[eventDate, eventTime].filter(Boolean).join('  ')}
           </SvgText>
         ) : null}
 
         {/* 메시지 */}
         {message ? (
-          <SvgText x={cx} y={msgY} textAnchor="middle" fontSize={cardW * 0.034} fill={themeColor} opacity={0.7}>
+          <SvgText x={cx} y={msgY} textAnchor="middle" fontFamily={ff} fontSize={cardW * 0.040} fill={themeColor} opacity={0.8}>
             {message}
           </SvgText>
         ) : null}
 
         {/* 장소 */}
         {venue ? (
-          <SvgText x={cx} y={venueY} textAnchor="middle" fontSize={cardW * 0.034} fill={themeColor} opacity={0.8}>
+          <SvgText x={cx} y={venueY} textAnchor="middle" fontFamily={ff} fontSize={cardW * 0.042} fill={themeColor} opacity={0.8}>
             {venue}
           </SvgText>
         ) : null}
@@ -169,13 +176,13 @@ const DolCard = React.forwardRef(function DolCard(
         {(parentDad || parentMom) ? (
           <>
             <SvgText x={cx * 0.55} y={parentsY} textAnchor="middle"
-              fontSize={cardW * 0.034} fill={themeColor} opacity={0.8} letterSpacing={3}>
+              fontSize={cardW * 0.040} fontFamily={ff} fill={themeColor} opacity={0.9} letterSpacing={2}>
               {parentDad ? `아빠 ${parentDad}` : ''}
             </SvgText>
-            <SvgText x={cx} y={parentsY} textAnchor="middle"
-              fontSize={cardW * 0.036} fill={themeColor}>♡</SvgText>
-            <SvgText x={cx * 1.45} y={parentsY} textAnchor="middle"
-              fontSize={cardW * 0.034} fill={themeColor} opacity={0.8} letterSpacing={3}>
+            <SvgText x={cx} y={parentsY} textAnchor="middle" fontFamily={ff}
+              fontSize={cardW * 0.040} fill={themeColor}>♡</SvgText>
+            <SvgText x={cx * 1.45} y={parentsY} textAnchor="middle" fontFamily={ff}
+              fontSize={cardW * 0.040} fill={themeColor} opacity={0.9} letterSpacing={2}>
               {parentMom ? `엄마 ${parentMom}` : ''}
             </SvgText>
           </>
@@ -183,7 +190,7 @@ const DolCard = React.forwardRef(function DolCard(
 
         {/* 하단 장식 점 */}
         <Circle cx={cx - 16} cy={dotsY} r={2.5} fill={themeColor} opacity={0.4} />
-        <Circle cx={cx}      cy={dotsY} r={2.5} fill={themeColor} opacity={0.6} />
+        <Circle cx={cx} cy={dotsY} r={2.5} fill={themeColor} opacity={0.6} />
         <Circle cx={cx + 16} cy={dotsY} r={2.5} fill={themeColor} opacity={0.4} />
 
         {/* 푸터 */}
@@ -216,8 +223,8 @@ const DolCard = React.forwardRef(function DolCard(
             top: titleTop,
             width: cardW,
             textAlign: 'center',
-            fontSize: cardW * 0.052,
-            fontWeight: '700',
+            fontSize: cardW * 0.074,
+            fontFamily: FONTS.cute,   // ← 여기
             color: themeColor,
             letterSpacing: 3,
           }}>
@@ -239,7 +246,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
   const t = INVITE_THEMES[theme] || INVITE_THEMES.yellow;
   const { bg, accent, accentLight, titleColor, flower, sub } = t;
   const cardW = SW - 32;
-  const heartW = cardW - 48;
+  const heartW = cardW - 72;
   const heartH = heartW * 0.88;
   const typeLine = ['1', '0', '0', '일'];
   const nameLine = (babyName || '아기').split('');
@@ -258,8 +265,8 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
           <Text key={i} style={[inviteStyles.rightTitleName, { color: accent }]}>{ch}</Text>
         ))}
       </View>
-      <Text style={[inviteStyles.subTitle, { color: sub }]}>100 DAY  CELEBRATION</Text>
-      <View style={{ alignItems: 'center', width: '100%', height: heartH + 16, justifyContent: 'center', marginVertical: 8 }}>
+      <Text style={[inviteStyles.subTitle, { color: sub }]}>   100 DAY  CELEBRATION</Text>
+      <View style={{ alignItems: 'center', width: '100%', height: heartH + 16, justifyContent: 'center', marginTop: 20, marginBottom: 8 }}>
         <Svg style={{ position: 'absolute' }} width={heartW} height={heartH} viewBox="0 0 200 176">
           <Path
             d="M100 168C42 132 8 98 8 62C8 30 30 12 58 12C76 12 100 32 100 32C100 32 124 12 142 12C170 12 192 30 192 62C192 98 158 132 100 168Z"
@@ -285,8 +292,8 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
       {message ? <Text style={[inviteStyles.infoMsg, { color: sub }]}>{message}</Text> : null}
       {(parentDad || parentMom) ? (
         <View style={inviteStyles.parentsRow}>
-          {parentDad ? <Text style={[inviteStyles.parentText, { color: accent }]}>아빠_{parentDad}</Text> : null}
-          {parentMom ? <Text style={[inviteStyles.parentText, { color: accent }]}>엄마_{parentMom}</Text> : null}
+          {parentDad ? <Text style={[inviteStyles.parentText, { color: accent }]}>아빠 {parentDad}</Text> : null}
+          {parentMom ? <Text style={[inviteStyles.parentText, { color: accent }]}>엄마 {parentMom}</Text> : null}
         </View>
       ) : null}
       <Text style={[inviteStyles.footer, { color: sub + '80' }]}>Made with BabySteps 🍼</Text>
@@ -343,7 +350,7 @@ export default function CelebrationScreen() {
       try {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') await MediaLibrary.createAssetAsync(tmpUri);
-      } catch (_) {}
+      } catch (_) { }
       Alert.alert('저장 완료! 🎉', '사진첩에 저장되었어요!');
     } catch (e) {
       Alert.alert('오류', '저장 중 오류가 발생했어요: ' + e.message);
@@ -582,9 +589,9 @@ const inviteStyles = StyleSheet.create({
     position: 'relative', overflow: 'hidden', alignItems: 'center',
     paddingHorizontal: 20, paddingVertical: 24,
   },
-  cornerTL: { position: 'absolute', top: 8,  left: 8,  fontSize: 32, opacity: 0.85 },
-  cornerTR: { position: 'absolute', top: 8,  right: 8, fontSize: 32, opacity: 0.85 },
-  cornerBL: { position: 'absolute', bottom: 8, left: 8,  fontSize: 32, opacity: 0.85 },
+  cornerTL: { position: 'absolute', top: 8, left: 8, fontSize: 32, opacity: 0.85 },
+  cornerTR: { position: 'absolute', top: 8, right: 8, fontSize: 32, opacity: 0.85 },
+  cornerBL: { position: 'absolute', bottom: 8, left: 8, fontSize: 32, opacity: 0.85 },
   cornerBR: { position: 'absolute', bottom: 8, right: 8, fontSize: 32, opacity: 0.85 },
   rightTitle: {
     position: 'absolute', right: 16, top: 44,
@@ -598,7 +605,7 @@ const inviteStyles = StyleSheet.create({
     marginBottom: 4, marginTop: 8, alignSelf: 'flex-start', marginLeft: 8,
   },
   photoRound: {
-    width: 160, height: 160, borderRadius: 80, borderWidth: 3,
+    width: 165, height: 165, borderRadius: 100, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     backgroundColor: '#fff',
     shadowColor: '#000', shadowOffset: { width: 0, height: 3 },

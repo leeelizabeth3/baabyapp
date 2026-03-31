@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
-import { useFonts, Nunito_700Bold } from '@expo-google-fonts/nunito';
 
 import CardMakerScreen from './src/screens/CardMakerScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
@@ -14,6 +13,13 @@ import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
 import CelebrationScreen from './src/screens/CelebrationScreen';
 
+import { useFonts } from 'expo-font';
+import { GamjaFlower_400Regular } from '@expo-google-fonts/gamja-flower';
+import { CuteFont_400Regular } from '@expo-google-fonts/cute-font';
+import { HiMelody_400Regular } from '@expo-google-fonts/hi-melody';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -26,7 +32,11 @@ Notifications.setNotificationHandler({
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [fontsLoaded] = useFonts({ Nunito_700Bold });
+  const [fontsLoaded] = useFonts({
+    GamjaFlower_400Regular,
+    CuteFont_400Regular,
+    HiMelody_400Regular,
+  });
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#FFF8E0' }} />;
 
   return (
