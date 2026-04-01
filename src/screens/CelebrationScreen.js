@@ -19,10 +19,19 @@ import { getBabyProfile } from '../utils/storage';
 const { width: SW } = Dimensions.get('window');
 // 파일 상단에 폰트 상수 추가
 const FONTS = {
-  cute: 'GamjaFlower_400Regular',   // 귀여움
-  melody: 'HiMelody_400Regular',    // 손글씨 감성
-  cuteFont: 'CuteFont_400Regular',  // 아기자기
+  cute: 'GamjaFlower_400Regular',
+  melody: 'HiMelody_400Regular',
+  cuteFont: 'CuteFont_400Regular',
 };
+
+const FONT_OPTIONS = [
+  { key: null,                     label: '기본',    sample: '성장보고서' },
+  { key: 'GamjaFlower_400Regular', label: '감자꽃체', sample: '아기 성장' },
+  { key: 'CuteFont_400Regular',    label: '귀여운체', sample: '아기 성장' },
+  { key: 'HiMelody_400Regular',    label: '멜로디체', sample: '아기 성장' },
+  { key: 'Gaegu_400Regular',       label: '개구체',   sample: '아기 성장' },
+  { key: 'Jua_400Regular',         label: '주아체',   sample: '아기 성장' },
+];
 // ── 날짜 계산 헬퍼 ─────────────────────────────
 function calcMilestones(birthdate) {
   if (!birthdate) return null;
@@ -56,7 +65,7 @@ const INVITE_THEMES = {
 
 // ── 돌잔치 전용 카드 ──────────────────────────────
 const DolCard = React.forwardRef(function DolCard(
-  { babyName, eventDate, eventTime, venue, message, photoUri, parentDad, parentMom, theme },
+  { babyName, eventDate, eventTime, venue, message, photoUri, parentDad, parentMom, theme, fontFamily },
   ref
 ) {
   const cardW = SW - 32;
@@ -76,8 +85,8 @@ const DolCard = React.forwardRef(function DolCard(
   // 하늘색 테마는 사진 동그랗게·조금 작게, 텍스트 아래로
   const isSky = theme === 'sky';
   const isYellow = theme === 'yellow';
-  const isPink = theme === 'pink';   // ← 추가
-  const ff = isPink ? 'GamjaFlower_400Regular' : undefined;  // ← 추가
+  const isPink = theme === 'pink';
+  const ff = fontFamily != null ? fontFamily : (isPink ? 'GamjaFlower_400Regular' : undefined);
   const photoSize = isSky ? cardW * 0.62 : null;          // 정사각형 → 완전한 원
   const photoTop = isSky ? cardH * 0.23 : cardH * 0.22;
   const photoOffsetX = isSky ? cardW * 0.02 : 0;
@@ -224,7 +233,7 @@ const DolCard = React.forwardRef(function DolCard(
             width: cardW,
             textAlign: 'center',
             fontSize: cardW * 0.074,
-            fontFamily: FONTS.cute,   // ← 여기
+            fontFamily: ff || FONTS.cute,
             color: themeColor,
             letterSpacing: 3,
           }}>
@@ -241,8 +250,8 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
   if (props.type === 'dol') {
     return <DolCard ref={ref} {...props} />;
   }
-  // 100일은 기존 카드 그대로
-  const { type, babyName, eventDate, eventTime, venue, message, photoUri, theme, parentDad, parentMom } = props;
+  const { type, babyName, eventDate, eventTime, venue, message, photoUri, theme, parentDad, parentMom, fontFamily } = props;
+  const ff = fontFamily || undefined;
   const t = INVITE_THEMES[theme] || INVITE_THEMES.yellow;
   const { bg, accent, accentLight, titleColor, flower, sub } = t;
   const cardW = SW - 32;
@@ -258,14 +267,14 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
       <Text style={inviteStyles.cornerBR}>{flower}</Text>
       <View style={inviteStyles.rightTitle}>
         {typeLine.map((ch, i) => (
-          <Text key={i} style={[inviteStyles.rightTitleType, { color: titleColor }]}>{ch}</Text>
+          <Text key={i} style={[inviteStyles.rightTitleType, { color: titleColor, fontFamily: ff }]}>{ch}</Text>
         ))}
         <View style={[inviteStyles.rightTitleDivider, { backgroundColor: accent }]} />
         {nameLine.map((ch, i) => (
-          <Text key={i} style={[inviteStyles.rightTitleName, { color: accent }]}>{ch}</Text>
+          <Text key={i} style={[inviteStyles.rightTitleName, { color: accent, fontFamily: ff }]}>{ch}</Text>
         ))}
       </View>
-      <Text style={[inviteStyles.subTitle, { color: sub }]}>   100 DAY  CELEBRATION</Text>
+      <Text style={[inviteStyles.subTitle, { color: sub, fontFamily: ff }]}>   100 DAY  CELEBRATION</Text>
       <View style={{ alignItems: 'center', width: '100%', height: heartH + 16, justifyContent: 'center', marginTop: 10, marginBottom: 8 }}>
         <Svg style={{ position: 'absolute' }} width={heartW} height={heartH} viewBox="0 0 200 176">
           <Path
@@ -281,22 +290,22 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
         </View>
       </View>
       {(eventDate || eventTime) ? (
-        <Text style={[inviteStyles.infoDate, { color: accent }]}>
+        <Text style={[inviteStyles.infoDate, { color: accent, fontFamily: ff }]}>
           {[eventDate, eventTime].filter(Boolean).join('  ')}
         </Text>
       ) : null}
-      {venue ? <Text style={inviteStyles.infoVenue}>{venue}</Text> : null}
+      {venue ? <Text style={[inviteStyles.infoVenue, { fontFamily: ff }]}>{venue}</Text> : null}
       {(eventDate || venue) ? (
         <View style={[inviteStyles.divider, { backgroundColor: accent + '40' }]} />
       ) : null}
-      {message ? <Text style={[inviteStyles.infoMsg, { color: sub }]}>{message}</Text> : null}
+      {message ? <Text style={[inviteStyles.infoMsg, { color: sub, fontFamily: ff }]}>{message}</Text> : null}
       {(parentDad || parentMom) ? (
         <View style={inviteStyles.parentsRow}>
-          {parentDad ? <Text style={[inviteStyles.parentText, { color: accent }]}>아빠 {parentDad}</Text> : null}
-          {parentMom ? <Text style={[inviteStyles.parentText, { color: accent }]}>엄마 {parentMom}</Text> : null}
+          {parentDad ? <Text style={[inviteStyles.parentText, { color: accent, fontFamily: ff }]}>아빠 {parentDad}</Text> : null}
+          {parentMom ? <Text style={[inviteStyles.parentText, { color: accent, fontFamily: ff }]}>엄마 {parentMom}</Text> : null}
         </View>
       ) : null}
-      <Text style={[inviteStyles.footer, { color: sub + '80' }]}>Made with BabySteps 🍼</Text>
+      <Text style={[inviteStyles.footer, { color: sub + '80', fontFamily: ff }]}>Made with BabySteps 🍼</Text>
     </View>
   );
 });
@@ -316,6 +325,7 @@ export default function CelebrationScreen() {
   const [cardVisible, setCardVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [inviteTheme, setInviteTheme] = useState('yellow');
+  const [selectedFont, setSelectedFont] = useState(null);
   const cardRef = useRef(null);
 
   useFocusEffect(useCallback(() => {
@@ -455,6 +465,26 @@ export default function CelebrationScreen() {
               <Text style={styles.themeHint}>테마 색상</Text>
             </View>
 
+            {/* 폰트 선택 */}
+            <View style={styles.fontPickerSection}>
+              <Text style={styles.fontPickerLabel}>✏️ 폰트</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {FONT_OPTIONS.map(opt => {
+                  const active = selectedFont === opt.key;
+                  return (
+                    <TouchableOpacity
+                      key={String(opt.key)}
+                      onPress={() => { setSelectedFont(opt.key); setCardVisible(false); }}
+                      style={[styles.fontChip, active && styles.fontChipActive]}
+                    >
+                      <Text style={[styles.fontChipSample, { fontFamily: opt.key || undefined }]}>{opt.sample}</Text>
+                      <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
             {/* 아기 이름 */}
             <View style={styles.inlineField}>
               <Text style={styles.inlineLabel}>아기 이름</Text>
@@ -553,6 +583,7 @@ export default function CelebrationScreen() {
               ref={cardRef}
               type={inviteType}
               theme={inviteTheme}
+              fontFamily={selectedFont}
               babyName={babyName}
               eventDate={eventDate}
               eventTime={eventTime}
@@ -690,4 +721,18 @@ const styles = StyleSheet.create({
   photoText: { fontSize: 13, color: '#8A7050' },
   cardSection: { marginTop: 20 },
   cardHint: { fontSize: 12, color: '#8A7050', textAlign: 'center', marginBottom: 10 },
+  fontPickerSection: {
+    marginBottom: 14, paddingTop: 12,
+    borderTopWidth: 1, borderTopColor: '#F0E0C0',
+  },
+  fontPickerLabel: { fontSize: 12, color: '#A08050', fontWeight: '600', marginBottom: 8 },
+  fontChip: {
+    alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 12, borderWidth: 1.5, borderColor: '#E8D8B0',
+    backgroundColor: '#FFF8EE', minWidth: 76,
+  },
+  fontChipActive: { borderColor: '#C87820', backgroundColor: '#FFF0D0' },
+  fontChipSample: { fontSize: 15, marginBottom: 2, color: '#333' },
+  fontChipLabel: { fontSize: 10, color: '#A08050', fontWeight: '500' },
+  fontChipLabelActive: { color: '#C87820', fontWeight: '700' },
 });

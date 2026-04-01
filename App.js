@@ -18,6 +18,8 @@ import { GamjaFlower_400Regular } from '@expo-google-fonts/gamja-flower';
 import { CuteFont_400Regular } from '@expo-google-fonts/cute-font';
 import { HiMelody_400Regular } from '@expo-google-fonts/hi-melody';
 import { Nunito_700Bold } from '@expo-google-fonts/nunito';
+import { Gaegu_400Regular } from '@expo-google-fonts/gaegu';
+import { Jua_400Regular } from '@expo-google-fonts/jua';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
@@ -38,6 +40,8 @@ export default function App() {
     CuteFont_400Regular,
     HiMelody_400Regular,
     Nunito_700Bold,
+    Gaegu_400Regular,
+    Jua_400Regular,
   });
 
   React.useEffect(() => {

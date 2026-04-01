@@ -72,6 +72,7 @@ export default function GrowthScreen() {
     setResult({
       mo, h: isNaN(h) ? null : h, w: isNaN(w) ? null : w, hc: isNaN(hc) ? null : hc,
       pH, pW, pHC, icon, title, body,
+      feedingRec: getFeedingRec(mo, isNaN(w) ? null : w),
     });
   };
 
@@ -215,6 +216,35 @@ export default function GrowthScreen() {
                   </View>
                 </Card>
 
+                {/* 수유 권장량 */}
+                <Card style={styles.feedCard}>
+                  <Text style={styles.feedTitle}>🍼 수유 권장량</Text>
+                  {result.w && <Text style={styles.feedBasis}>체중 {result.w}kg 기준</Text>}
+                  <View style={styles.feedRow}>
+                    <View style={styles.feedItem}>
+                      <Text style={styles.feedItemEmoji}>☀️</Text>
+                      <Text style={styles.feedItemLabel}>하루 총 수유량</Text>
+                      <Text style={styles.feedItemValue}>{result.feedingRec.dailyTotal}</Text>
+                    </View>
+                    <View style={styles.feedDivider} />
+                    <View style={styles.feedItem}>
+                      <Text style={styles.feedItemEmoji}>🍼</Text>
+                      <Text style={styles.feedItemLabel}>1회 수유량</Text>
+                      <Text style={styles.feedItemValue}>{result.feedingRec.perFeed}</Text>
+                    </View>
+                    <View style={styles.feedDivider} />
+                    <View style={styles.feedItem}>
+                      <Text style={styles.feedItemEmoji}>🔁</Text>
+                      <Text style={styles.feedItemLabel}>하루 횟수</Text>
+                      <Text style={styles.feedItemValue}>{result.feedingRec.freq}</Text>
+                    </View>
+                  </View>
+                  {result.feedingRec.note && (
+                    <Text style={styles.feedNote}>💡 {result.feedingRec.note}</Text>
+                  )}
+                  <Text style={styles.feedDisclaimer}>* 모유/분유 공통 참고값. 아기마다 차이가 있어요.</Text>
+                </Card>
+
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                   <Text style={styles.saveBtnText}>📋 기록 저장하기</Text>
                 </TouchableOpacity>
@@ -282,6 +312,41 @@ export default function GrowthScreen() {
 }
 
 // ── Sub-components ──────────────────────────
+
+function getFeedingRec(month, weightKg) {
+  // 개월별 기준 (1회 수유량, 하루 횟수, 체중×배수)
+  const table = [
+    { perFeed: '60~90ml',   freq: '8~12회', lo: 150, hi: 180 }, // 0
+    { perFeed: '90~120ml',  freq: '7~8회',  lo: 150, hi: 180 }, // 1
+    { perFeed: '120~150ml', freq: '6~7회',  lo: 140, hi: 170 }, // 2
+    { perFeed: '150~180ml', freq: '5~6회',  lo: 130, hi: 160 }, // 3
+    { perFeed: '150~200ml', freq: '5~6회',  lo: 120, hi: 150 }, // 4
+    { perFeed: '180~210ml', freq: '5회',    lo: 120, hi: 140 }, // 5
+    { perFeed: '200~240ml', freq: '4~5회',  lo: 100, hi: 120 }, // 6
+    { perFeed: '200~240ml', freq: '3~4회',  lo: 100, hi: 120 }, // 7
+    { perFeed: '200~240ml', freq: '3~4회',  lo:  90, hi: 110 }, // 8
+    { perFeed: '200~240ml', freq: '3~4회',  lo:  90, hi: 110 }, // 9
+    { perFeed: '200~240ml', freq: '3~4회',  lo:  80, hi: 100 }, // 10
+    { perFeed: '200~240ml', freq: '3~4회',  lo:  80, hi: 100 }, // 11
+    { perFeed: '180~240ml', freq: '3~4회',  lo:  80, hi: 100 }, // 12
+  ];
+  const rec = table[Math.min(12, month)];
+  const cap = month <= 5 ? 1000 : 1200;
+  let dailyTotal;
+  if (weightKg && !isNaN(weightKg)) {
+    const lo = Math.min(Math.round(weightKg * rec.lo), cap);
+    const hi = Math.min(Math.round(weightKg * rec.hi), cap);
+    dailyTotal = `${lo}~${hi}ml`;
+  } else {
+    const fallback = ['480~700','630~900','700~1000','750~1000','750~1000','900~1000',
+                      '600~900','600~900','600~900','550~850','550~850','500~800','480~750'];
+    dailyTotal = fallback[Math.min(12, month)] + 'ml';
+  }
+  const note = month >= 6 ? '이유식과 병행해요'
+    : month >= 4 ? '이유식 시작을 준비할 시기예요'
+    : null;
+  return { dailyTotal, perFeed: rec.perFeed, freq: rec.freq, note };
+}
 
 function MeasField({ emoji, label, value, onChange, unit }) {
   return (
@@ -518,4 +583,15 @@ const styles = StyleSheet.create({
   recDate: { fontSize: 11, color: '#A09070', marginBottom: 5 },
   recVals: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   recDel: { padding: 6 },
+  feedCard: { marginBottom: 10 },
+  feedTitle: { fontSize: 15, fontWeight: '800', color: '#5A3A10', marginBottom: 2 },
+  feedBasis: { fontSize: 11, color: '#A09070', marginBottom: 12 },
+  feedRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  feedItem: { flex: 1, alignItems: 'center', gap: 3 },
+  feedItemEmoji: { fontSize: 20 },
+  feedItemLabel: { fontSize: 10, color: '#A09070', fontWeight: '600', textAlign: 'center' },
+  feedItemValue: { fontSize: 13, fontWeight: '800', color: '#C87820', textAlign: 'center' },
+  feedDivider: { width: 1, height: 44, backgroundColor: '#F0E5D0' },
+  feedNote: { fontSize: 12, color: '#6A8A50', fontWeight: '600', marginBottom: 6 },
+  feedDisclaimer: { fontSize: 10, color: '#B0A080' },
 });

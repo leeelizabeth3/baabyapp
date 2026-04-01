@@ -65,7 +65,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         <View style={styles.alreadyWrap}>
           <Text style={styles.alreadyEmoji}>🎉</Text>
           <Text style={styles.alreadyTitle}>프리미엄 사용 중이에요!</Text>
-          <Text style={styles.alreadySub}>모든 테마 15개를 자유롭게 사용하세요 🐾</Text>
+          <Text style={styles.alreadySub}>모든 테마 15개 + 배경 패턴 5종을 자유롭게 사용하세요 🐾</Text>
           {onClose && (
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>닫기</Text>
@@ -116,6 +116,28 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
               </View>
             ))}
           </View>
+        </View>
+
+        {/* 배경 패턴 */}
+        <View style={[styles.themeSection, styles.premiumThemeSection]}>
+          <Text style={styles.themeSectionLabel}>🌀 배경 패턴 (5종)</Text>
+          <View style={styles.themeRow}>
+            {[
+              { emoji: '⠿', label: '도트' },
+              { emoji: '〰', label: '물결' },
+              { emoji: '≡', label: '줄무늬' },
+              { emoji: '⬡', label: '육각형' },
+              { emoji: '✦', label: '별' },
+            ].map(p => (
+              <View key={p.label} style={styles.themeChip}>
+                <View style={[styles.themeChipDot, { backgroundColor: '#F0EEF8' }]}>
+                  <Text style={{ fontSize: 20 }}>{p.emoji}</Text>
+                </View>
+                <Text style={styles.themeChipName}>{p.label}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.patternHint}>카드 배경에 예쁜 패턴을 입혀보세요 ✨</Text>
         </View>
 
         {/* 기부 배너 */}
@@ -184,6 +206,7 @@ const styles = StyleSheet.create({
   },
   themeChipName: { fontSize: 9, color: '#8A7050', textAlign: 'center' },
   lockIcon: { fontSize: 10 },
+  patternHint: { fontSize: 11, color: '#8A7050', marginTop: 10, textAlign: 'center' },
   donationBanner: {
     backgroundColor: '#FFF0F0', borderRadius: 14,
     padding: 14, flexDirection: 'row', gap: 12,

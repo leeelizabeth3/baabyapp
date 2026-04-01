@@ -27,6 +27,24 @@ const FONTS = {
   melody: 'HiMelody_400Regular',
   cuteFont: 'CuteFont_400Regular',
 };
+
+const FONT_OPTIONS = [
+  { key: null,                     label: '테마 기본', sample: '성장보고서' },
+  { key: 'GamjaFlower_400Regular', label: '감자꽃체',  sample: '아기 성장' },
+  { key: 'CuteFont_400Regular',    label: '귀여운체',  sample: '아기 성장' },
+  { key: 'HiMelody_400Regular',    label: '멜로디체',  sample: '아기 성장' },
+  { key: 'Gaegu_400Regular',       label: '개구체',    sample: '아기 성장' },
+  { key: 'Jua_400Regular',         label: '주아체',    sample: '아기 성장' },
+];
+
+const PATTERN_OPTIONS = [
+  { key: 'none',    label: '없음' },
+  { key: 'dots',    label: '도트' },
+  { key: 'waves',   label: '물결' },
+  { key: 'stripes', label: '줄무늬' },
+  { key: 'hex',     label: '육각형' },
+  { key: 'stars',   label: '별' },
+];
 // ── 100일 알림 스케줄 ──────────────────────────
 async function schedule100DayNotification(babyName, birthdateStr) {
   try {
@@ -99,6 +117,33 @@ function MonthDropdown({ value, onChange }) {
   );
 }
 
+const MINI_PATTERNS = {
+  dots:    (c) => <Pattern id="pp" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse"><Circle cx="5" cy="5" r="1.5" fill={c} /></Pattern>,
+  waves:   (c) => <Pattern id="pp" x="0" y="0" width="30" height="10" patternUnits="userSpaceOnUse"><Path d="M0 5 Q7.5 0 15 5 Q22.5 10 30 5" fill="none" stroke={c} strokeWidth="1.5" /></Pattern>,
+  stripes: (c) => <Pattern id="pp" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><Rect x="0" y="0" width="5" height="10" fill={c} /></Pattern>,
+  hex:     (c) => <Pattern id="pp" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse"><Polygon points="8,1 14,5 14,11 8,15 2,11 2,5" fill="none" stroke={c} strokeWidth="1" /></Pattern>,
+  stars:   (c) => <Pattern id="pp" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><Circle cx="4" cy="4" r="1" fill={c} /><Circle cx="14" cy="12" r="0.7" fill={c} /><Circle cx="9" cy="16" r="0.8" fill={c} /></Pattern>,
+};
+
+function PatternSwatch({ patternKey, label, active, onPress }) {
+  const previewColor = '#B0A0C8';
+  return (
+    <TouchableOpacity onPress={onPress} style={[styles.fontChip, active && styles.fontChipActive]}>
+      <View style={{ width: 52, height: 34, borderRadius: 6, overflow: 'hidden', backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
+        {patternKey && patternKey !== 'none' ? (
+          <Svg width="52" height="34">
+            <Defs>{MINI_PATTERNS[patternKey]?.(previewColor)}</Defs>
+            <Rect width="52" height="34" fill="url(#pp)" />
+          </Svg>
+        ) : patternKey === null ? (
+          <Text style={{ fontSize: 18 }}>🎨</Text>
+        ) : null}
+      </View>
+      <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function CardMakerScreen() {
   const insets = useSafeAreaInsets();
   const cardRef = useRef(null);
@@ -132,6 +177,8 @@ export default function CardMakerScreen() {
   const [prematureWeeks, setPrematureWeeks] = useState('');
   const [showPremium, setShowPremium] = useState(false);
   const [userIsPremium, setUserIsPremium] = useState(false);
+  const [selectedFont, setSelectedFont] = useState(null);
+  const [selectedPattern, setSelectedPattern] = useState('none');
 
   useFocusEffect(useCallback(() => {
     isPremium().then(setUserIsPremium);
@@ -544,6 +591,58 @@ export default function CardMakerScreen() {
               })}
             </View>
 
+            {/* 폰트 선택 */}
+            <View style={styles.fontPickerSection}>
+              <Text style={styles.fontPickerLabel}>✏️ 폰트</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {FONT_OPTIONS.map(opt => {
+                  const active = selectedFont === opt.key;
+                  return (
+                    <TouchableOpacity
+                      key={String(opt.key)}
+                      onPress={() => setSelectedFont(opt.key)}
+                      style={[styles.fontChip, active && styles.fontChipActive]}
+                    >
+                      <Text style={[styles.fontChipSample, { fontFamily: opt.key || undefined }]}>{opt.sample}</Text>
+                      <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
+            {/* 배경 패턴 선택 */}
+            <View style={styles.fontPickerSection}>
+              <Text style={styles.fontPickerLabel}>🌀 배경 패턴</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {PATTERN_OPTIONS.map(opt => {
+                  const locked = opt.key !== 'none' && !userIsPremium;
+                  return (
+                    <TouchableOpacity
+                      key={opt.key}
+                      onPress={() => locked ? setShowPremium(true) : setSelectedPattern(opt.key)}
+                      style={[styles.fontChip, selectedPattern === opt.key && styles.fontChipActive]}
+                    >
+                      <View style={{ width: 52, height: 34, borderRadius: 6, overflow: 'hidden', backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
+                        {opt.key !== 'none' ? (
+                          <Svg width="52" height="34">
+                            <Defs>{MINI_PATTERNS[opt.key]?.('#B0A0C8')}</Defs>
+                            <Rect width="52" height="34" fill="url(#pp)" />
+                          </Svg>
+                        ) : null}
+                        {locked && (
+                          <View style={[styles.lockOverlay, { borderRadius: 6 }]}>
+                            <Text style={{ fontSize: 14 }}>🔒</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.fontChipLabel, selectedPattern === opt.key && styles.fontChipLabelActive]}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
             {/* 프리미엄 모달 */}
             <Modal visible={showPremium} animationType="slide">
               <PremiumScreen
@@ -567,6 +666,8 @@ export default function CardMakerScreen() {
               ref={cardRef}
               theme={t}
               themeName={selectedTheme}
+              fontOverride={selectedFont}
+              patternOverride={selectedPattern}
               name={name || '아기'}
               month={month}
               dateStr={dateStr}
@@ -637,10 +738,26 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride },
   ref
 ) {
-  const ff = themeName === 'blossom' ? 'GamjaFlower_400Regular' : undefined;
+  const titleFf = fontOverride != null ? fontOverride
+    : (t.titleFont || (themeName === 'blossom' ? FONTS.cute : undefined));
+  const bodyFf = fontOverride != null ? fontOverride
+    : (themeName === 'blossom' ? FONTS.cute : undefined);
+
+  const effectivePattern = (() => {
+    if (!patternOverride || patternOverride === 'none') return null;
+    const color = t.pillBorder || t.tagBg || '#AAAAAA';
+    return {
+      dots:    { type: 'dots',    color, opacity: 0.4, size: 18, r: 2.2 },
+      waves:   { type: 'waves',   color, opacity: 0.3 },
+      stripes: { type: 'stripes', color, opacity: 0.18, size: 18 },
+      hex:     { type: 'hex',     color, opacity: 0.25 },
+      stars:   { type: 'stars',   color, opacity: 0.35 },
+    }[patternOverride] || null;
+  })();
+
   const cardW = SW - 32;
 
   function InfoBlock({ tag, content, flex }) {
@@ -648,16 +765,16 @@ const BabyCard = React.forwardRef(function BabyCard(
     return (
       <View style={[cardStyles.infoBlock, { flex: flex || 1, backgroundColor: t.ibBg, borderColor: t.ibBorder }]}>
         <View style={[cardStyles.infoTag, { backgroundColor: t.tagBg }]}>
-          <Text style={[cardStyles.infoTagText, { color: t.tagColor, fontFamily: ff }]}>{tag}</Text>
+          <Text style={[cardStyles.infoTagText, { color: t.tagColor, fontFamily: bodyFf }]}>{tag}</Text>
         </View>
-        <Text style={[cardStyles.infoBody, { fontFamily: ff }, t.dark && { color: 'rgba(255,255,255,0.88)' }]}>{content}</Text>
+        <Text style={[cardStyles.infoBody, { fontFamily: bodyFf }, t.dark && { color: 'rgba(255,255,255,0.88)' }]}>{content}</Text>
       </View>
     );
   }
 
   return (
     <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW - 32 }]}>
-      <CardPattern pattern={t.pattern} width={SW - 32} />
+      <CardPattern pattern={effectivePattern} width={SW - 32} />
       {/* Corner decos */}
       <Text style={[cardStyles.deco, { top: 8, left: 12, transform: [{ rotate: '-15deg' }] }]}>{t.emoji[0]}</Text>
       <Text style={[cardStyles.deco, { top: 8, right: 12, transform: [{ rotate: '12deg' }] }]}>{t.emoji[1]}</Text>
@@ -667,19 +784,15 @@ const BabyCard = React.forwardRef(function BabyCard(
       {/* Title */}
       <Text style={[cardStyles.title, {
         color: t.titleColor,
-        fontFamily: t.titleFont
-          ? t.titleFont
-          : themeName === 'blossom'
-            ? FONTS.cute
-            : undefined,
-        fontWeight: (t.titleFont || themeName === 'blossom') ? undefined : '800',
+        fontFamily: titleFf,
+        fontWeight: (fontOverride != null || t.titleFont || themeName === 'blossom') ? undefined : '800',
       }]}>
         {t.emoji[0]} {name} {month}개월 성장보고서
       </Text>
       {/* Date pill */}
       {dateStr ? (
         <View style={[cardStyles.datePill, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
-          <Text style={[cardStyles.datePillText, { color: t.pillColor }]}>{dateStr}</Text>
+          <Text style={[cardStyles.datePillText, { color: t.pillColor, fontFamily: bodyFf }]}>{dateStr}</Text>
         </View>
       ) : null}
 
@@ -723,7 +836,7 @@ const BabyCard = React.forwardRef(function BabyCard(
         {special ? <InfoBlock tag="✨ 특이사항" content={special} /> : null}
       </View>
 
-      <Text style={[cardStyles.footer, { color: t.dark ? 'rgba(255,255,255,0.25)' : 'rgba(90,60,20,0.3)' }]}>
+      <Text style={[cardStyles.footer, { color: t.dark ? 'rgba(255,255,255,0.25)' : 'rgba(90,60,20,0.3)', fontFamily: bodyFf }]}>
         Made with BabySteps 🍼
       </Text>
     </View>
@@ -743,12 +856,12 @@ const cardStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   deco: { position: 'absolute', fontSize: 30, zIndex: 1 },
-  title: { fontSize: 19, textAlign: 'center', marginBottom: 6, marginTop: 4 },
+  title: { fontSize: 23, textAlign: 'center', marginBottom: 6, marginTop: 4 },
   datePill: {
     alignSelf: 'center', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
     borderWidth: 1.5, marginBottom: 10,
   },
-  datePillText: { fontSize: 11, fontWeight: '500' },
+  datePillText: { fontSize: 12, fontWeight: '500' },
   row: { flexDirection: 'row', marginBottom: 6 },
   infoBlock: {
     borderRadius: 10, padding: 8, borderWidth: 1.5, flex: 1,
@@ -756,8 +869,8 @@ const cardStyles = StyleSheet.create({
   infoTag: {
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 4,
   },
-  infoTagText: { fontSize: 10, fontWeight: '700' },
-  infoBody: { fontSize: 10, color: '#4A3520', lineHeight: 15 },
+  infoTagText: { fontSize: 11, fontWeight: '700' },
+  infoBody: { fontSize: 11, color: '#4A3520', lineHeight: 17 },
   photoCircle: {
     width: 120, height: 120, borderRadius: 60, borderWidth: 3,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
@@ -769,7 +882,7 @@ const cardStyles = StyleSheet.create({
     elevation: 4,
   },
   photoImg: { width: '100%', height: '100%' },
-  footer: { textAlign: 'center', fontSize: 10, marginTop: 8 },
+  footer: { textAlign: 'center', fontSize: 11, marginTop: 8 },
 });
 
 const styles = StyleSheet.create({
@@ -899,5 +1012,45 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fontPickerSection: {
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F0E0C0',
+  },
+  fontPickerLabel: {
+    fontSize: 12,
+    color: '#A08050',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  fontChip: {
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E8D8B0',
+    backgroundColor: '#FFF8EE',
+    minWidth: 76,
+  },
+  fontChipActive: {
+    borderColor: '#C87820',
+    backgroundColor: '#FFF0D0',
+  },
+  fontChipSample: {
+    fontSize: 15,
+    marginBottom: 2,
+    color: '#333',
+  },
+  fontChipLabel: {
+    fontSize: 10,
+    color: '#A08050',
+    fontWeight: '500',
+  },
+  fontChipLabelActive: {
+    color: '#C87820',
+    fontWeight: '700',
   },
 });
