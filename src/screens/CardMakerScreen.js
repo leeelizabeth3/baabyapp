@@ -503,16 +503,16 @@ export default function CardMakerScreen() {
               <StyledInput value={clothes} onChangeText={setClothes} placeholder="배냇저고리 / 60" />
             </FormField>
             <FormField label="😴 수면">
-              <StyledInput value={sleep} onChangeText={setSleep} placeholder={"평균 15시간\n3시간에 한 번 깨서 맘마타임"} multiline />
+              <StyledInput value={sleep} onChangeText={setSleep} placeholder={"평균 15시간\n3시간에 한 번 깨서 맘마타임"} multiline numberOfLines={2} />
             </FormField>
             <FormField label="🍼 맘마">
-              <StyledInput value={feeding} onChangeText={setFeeding} placeholder={"압타밀 1단계\n유축수유 60~100ml × 8회"} multiline />
+              <StyledInput value={feeding} onChangeText={setFeeding} placeholder={"압타밀 1단계\n유축수유 60~100ml × 8회"} multiline numberOfLines={2} />
             </FormField>
             <FormField label="🧷 기저귀">
               <StyledInput value={diaper} onChangeText={setDiaper} placeholder="하기스 네이처메이드 1단계" />
             </FormField>
             <FormField label="💉 접종내역">
-              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (01/26)" multiline />
+              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (01/26)" />
             </FormField>
             <FormField label="❤️ 좋아하는 것">
               <StyledInput value={likes} onChangeText={setLikes} placeholder={"타이니 모빌\n트립트랩 뉴본"} multiline />
@@ -951,9 +951,9 @@ const styles = StyleSheet.create({
   photoIcon: { fontSize: 28, marginBottom: 6 },
   photoText: { fontSize: 13, color: '#8A7050' },
   photoSub: { fontSize: 11, color: '#A09070', marginTop: 2 },
-  themeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  themeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   themeSwatch: {
-    width: '30%', borderRadius: 12, padding: 8, alignItems: 'center',
+    width: '23%', borderRadius: 12, padding: 6, alignItems: 'center',
     borderWidth: 2, borderColor: 'transparent', position: 'relative',
   },
   themeSwatchActive: { borderColor: '#5A3A10' },

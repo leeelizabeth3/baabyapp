@@ -320,6 +320,28 @@ export const THEMES = {
     swatchColors: ['#F0FFF4', '#4AAA50'],
     swatchIcon: '🐸',
   },
+  rainbow: {
+    key: 'rainbow',
+    name: '🌈 무지개',
+    pattern: { type: 'dots', color: '#FF9090', opacity: 0.28, size: 14, r: 1.8 },
+    emoji: ['🌈', '☀️', '🌟', '✨'],
+    bg: '#FEFFF8',
+    cardBg: '#FEFFF8',
+    dotColor: 'rgba(255,180,100,0.12)',
+    titleColor: '#E8404A',
+    titleFont: 'Jua_400Regular',
+    pillBg: '#FFF4B0',
+    pillBorder: '#FFD840',
+    pillColor: '#8A6010',
+    ibBg: 'rgba(255,255,255,0.9)',
+    ibBorder: 'rgba(255,200,80,0.35)',
+    tagBg: '#FF8040',
+    tagColor: '#FFFFFF',
+    photoBorder: '#FF8040',
+    photoBg: ['#FFF4B0', '#FFE0A8'],
+    swatchColors: ['#FEFFF8', '#FF8040'],
+    swatchIcon: '🌈',
+  },
 };
 
 export const THEME_LIST = Object.values(THEMES);

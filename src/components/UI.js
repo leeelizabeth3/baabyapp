@@ -79,12 +79,13 @@ export function FormField({ label, children, style }) {
 }
 
 // ── StyledInput ───────────────────────────────
-export function StyledInput({ multiline, ...props }) {
+export function StyledInput({ multiline, numberOfLines, ...props }) {
   return (
     <TextInput
-      style={[styles.input, multiline && { minHeight: 70, textAlignVertical: 'top' }]}
+      style={[styles.input, multiline && { minHeight: numberOfLines ? numberOfLines * 22 + 16 : 70, textAlignVertical: 'top' }]}
       placeholderTextColor="#B0A080"
       multiline={multiline}
+      numberOfLines={numberOfLines}
       editable={true}
       pointerEvents="auto"
       underlineColorAndroid="transparent"

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PREMIUM_KEY = 'isPremium_v1';
 
-export const FREE_THEMES = ['honeybee', 'blossom', 'ocean'];
+export const FREE_THEMES = ['honeybee', 'blossom', 'ocean', 'forest'];
 
 export const PRODUCTS = {
   LIFETIME: 'com.elizlee.babyreport.premium_lifetime',
