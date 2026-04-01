@@ -39,6 +39,11 @@ export default function App() {
     HiMelody_400Regular,
     Nunito_700Bold,
   });
+
+  React.useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#FFF8E0' }} />;
 
   return (

@@ -15,7 +15,8 @@
       },
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "아기 사진을 성장보고서에 추가하기 위해 사진 접근 권한이 필요합니다.",
-        "NSPhotoLibraryAddUsageDescription": "성장보고서 카드를 사진첩에 저장하기 위해 접근 권한이 필요합니다."
+        "NSPhotoLibraryAddUsageDescription": "성장보고서 카드를 사진첩에 저장하기 위해 접근 권한이 필요합니다.",
+        "NSCameraUsageDescription": "아기 사진을 직접 촬영하여 성장보고서에 추가하기 위해 카메라 접근 권한이 필요합니다."
       }
     },
     "extra": {

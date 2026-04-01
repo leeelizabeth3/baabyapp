@@ -266,7 +266,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
         ))}
       </View>
       <Text style={[inviteStyles.subTitle, { color: sub }]}>   100 DAY  CELEBRATION</Text>
-      <View style={{ alignItems: 'center', width: '100%', height: heartH + 16, justifyContent: 'center', marginTop: 20, marginBottom: 8 }}>
+      <View style={{ alignItems: 'center', width: '100%', height: heartH + 16, justifyContent: 'center', marginTop: 10, marginBottom: 8 }}>
         <Svg style={{ position: 'absolute' }} width={heartW} height={heartH} viewBox="0 0 200 176">
           <Path
             d="M100 168C42 132 8 98 8 62C8 30 30 12 58 12C76 12 100 32 100 32C100 32 124 12 142 12C170 12 192 30 192 62C192 98 158 132 100 168Z"
@@ -605,7 +605,7 @@ const inviteStyles = StyleSheet.create({
     marginBottom: 4, marginTop: 8, alignSelf: 'flex-start', marginLeft: 8,
   },
   photoRound: {
-    width: 165, height: 165, borderRadius: 100, borderWidth: 2,
+    width: 200, height: 180, borderRadius: 100, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     backgroundColor: '#fff',
     shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
