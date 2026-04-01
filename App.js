@@ -17,6 +17,7 @@ import { useFonts } from 'expo-font';
 import { GamjaFlower_400Regular } from '@expo-google-fonts/gamja-flower';
 import { CuteFont_400Regular } from '@expo-google-fonts/cute-font';
 import { HiMelody_400Regular } from '@expo-google-fonts/hi-melody';
+import { Nunito_700Bold } from '@expo-google-fonts/nunito';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
@@ -36,6 +37,7 @@ export default function App() {
     GamjaFlower_400Regular,
     CuteFont_400Regular,
     HiMelody_400Regular,
+    Nunito_700Bold,
   });
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#FFF8E0' }} />;
 

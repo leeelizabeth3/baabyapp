@@ -669,10 +669,10 @@ const BabyCard = React.forwardRef(function BabyCard(
         color: t.titleColor,
         fontFamily: t.titleFont
           ? t.titleFont
-          : selectedTheme === 'blossom'   // ← blossom이면 cute 폰트
+          : themeName === 'blossom'
             ? FONTS.cute
             : undefined,
-        fontWeight: (t.titleFont || selectedTheme === 'blossom') ? undefined : '800',
+        fontWeight: (t.titleFont || themeName === 'blossom') ? undefined : '800',
       }]}>
         {t.emoji[0]} {name} {month}개월 성장보고서
       </Text>
