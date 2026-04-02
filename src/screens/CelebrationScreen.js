@@ -25,7 +25,7 @@ const FONTS = {
 };
 
 const FONT_OPTIONS = [
-  { key: null,                     label: '기본',    sample: '성장보고서' },
+  { key: null,                     label: '테마 기본', sample: '아기 성장' },
   { key: 'GamjaFlower_400Regular', label: '감자꽃체', sample: '아기 성장' },
   { key: 'CuteFont_400Regular',    label: '귀여운체', sample: '아기 성장' },
   { key: 'HiMelody_400Regular',    label: '멜로디체', sample: '아기 성장' },

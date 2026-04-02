@@ -29,7 +29,7 @@ const FONTS = {
 };
 
 const FONT_OPTIONS = [
-  { key: null,                     label: '테마 기본', sample: '성장보고서' },
+  { key: null,                     label: '테마 기본', sample: '아기 성장' },
   { key: 'GamjaFlower_400Regular', label: '감자꽃체',  sample: '아기 성장' },
   { key: 'CuteFont_400Regular',    label: '귀여운체',  sample: '아기 성장' },
   { key: 'HiMelody_400Regular',    label: '멜로디체',  sample: '아기 성장' },
@@ -194,18 +194,25 @@ export default function CardMakerScreen() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     birth.setHours(0, 0, 0, 0);
-    const daysOld = Math.floor((today - birth) / (1000 * 60 * 60 * 24));
-    if (daysOld < 0) return null;
-    const weeksOld = Math.floor(daysOld / 7);
-    const monthsOld = Math.min(12, Math.floor(daysOld / 30.4375));
+    const diffDays = Math.floor((today - birth) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return null;
+    // 생후 1일 = 태어난 날, 한국식 계산
+    const daysOld = diffDays + 1;
+    const weeksOld = Math.floor(diffDays / 7);
+    // 달력 기준 개월수 계산 (30.4375 나누기 방식은 부정확)
+    const rawMonths = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
+    const monthsOld = Math.min(12, today.getDate() >= birth.getDate() ? rawMonths : rawMonths - 1);
     let corrected = null;
     if (isPremature && prematureWeeks) {
       const premWeeks = parseInt(prematureWeeks) || 0;
-      const correctedDays = Math.max(0, daysOld - premWeeks * 7);
+      const correctedDiffDays = Math.max(0, diffDays - premWeeks * 7);
+      const correctedBirth = new Date(birth.getTime() + premWeeks * 7 * 24 * 60 * 60 * 1000);
+      const correctedRawMonths = (today.getFullYear() - correctedBirth.getFullYear()) * 12 + (today.getMonth() - correctedBirth.getMonth());
+      const correctedMonths = Math.min(12, Math.max(0, today.getDate() >= correctedBirth.getDate() ? correctedRawMonths : correctedRawMonths - 1));
       corrected = {
-        days: correctedDays,
-        weeks: Math.floor(correctedDays / 7),
-        months: Math.min(12, Math.max(0, Math.floor(correctedDays / 30.4375))),
+        days: correctedDiffDays + 1,
+        weeks: Math.floor(correctedDiffDays / 7),
+        months: correctedMonths,
       };
     }
     return { days: daysOld, weeks: weeksOld, months: monthsOld, corrected };

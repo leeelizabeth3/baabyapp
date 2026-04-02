@@ -5,7 +5,7 @@ import {
   Alert, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, disconnectIAP, PRODUCTS, addPurchaseListener } from '../utils/purchase';
+import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, disconnectIAP, PRODUCTS, addPurchaseListener, restorePurchases } from '../utils/purchase';
 import { THEME_LIST } from '../data/themes';
 
 export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
@@ -56,6 +56,24 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
     }
   };
 
+  const handleRestore = async () => {
+    setLoading('restore');
+    try {
+      const restored = await restorePurchases();
+      setLoading(null);
+      if (restored) {
+        setAlreadyPremium(true);
+        Alert.alert('✅ 복원 완료', '프리미엄이 복원되었어요!');
+        onPurchaseSuccess?.();
+      } else {
+        Alert.alert('복원 실패', '이전에 구매한 내역을 찾을 수 없어요.\n같은 Apple ID로 로그인되어 있는지 확인해주세요.');
+      }
+    } catch (e) {
+      setLoading(null);
+      Alert.alert('복원 오류', e?.message || '다시 시도해주세요.');
+    }
+  };
+
   const premiumThemes = THEME_LIST.filter(t => !FREE_THEMES.includes(t.key));
   const freeThemes = THEME_LIST.filter(t => FREE_THEMES.includes(t.key));
 
@@ -65,7 +83,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         <View style={styles.alreadyWrap}>
           <Text style={styles.alreadyEmoji}>🎉</Text>
           <Text style={styles.alreadyTitle}>프리미엄 사용 중이에요!</Text>
-          <Text style={styles.alreadySub}>모든 테마 15개 + 배경 패턴 5종을 자유롭게 사용하세요 🐾</Text>
+          <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종을 자유롭게 사용하세요 🐾</Text>
           {onClose && (
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>닫기</Text>
@@ -89,7 +107,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
 
         {/* 무료 테마 */}
         <View style={styles.themeSection}>
-          <Text style={styles.themeSectionLabel}>🆓 무료 테마 (3개)</Text>
+          <Text style={styles.themeSectionLabel}>🆓 무료 테마 (4개)</Text>
           <View style={styles.themeRow}>
             {freeThemes.map(t => (
               <View key={t.key} style={styles.themeChip}>
@@ -172,6 +190,13 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           </TouchableOpacity>
         )}
 
+        <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} disabled={!!loading}>
+          {loading === 'restore'
+            ? <ActivityIndicator color="#A09070" size="small" />
+            : <Text style={styles.restoreBtnText}>이미 구매했나요? 복원하기</Text>
+          }
+        </TouchableOpacity>
+
       </ScrollView>
     </View>
   );
@@ -244,6 +269,8 @@ const styles = StyleSheet.create({
   buyBtnText: { fontSize: 16, fontWeight: '800', color: '#5A3A10' },
   laterBtn: { alignItems: 'center', paddingVertical: 10 },
   laterBtnText: { fontSize: 14, color: '#A09070' },
+  restoreBtn: { alignItems: 'center', paddingVertical: 10 },
+  restoreBtnText: { fontSize: 13, color: '#A09070', textDecorationLine: 'underline' },
   closeBtn: {
     marginTop: 24, backgroundColor: '#F5C842',
     borderRadius: 12, paddingVertical: 12, paddingHorizontal: 32,
