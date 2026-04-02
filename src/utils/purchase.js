@@ -67,7 +67,6 @@ export async function getProducts() {
     } catch (_) {}
 
     const results = await IAP.fetchProducts({ skus: [PRODUCTS.LIFETIME], type: 'in-app' });
-    console.log('[IAP] products:', JSON.stringify(results));
     return results || [];
   } catch (e) {
     console.error('getProducts error:', e);
@@ -78,7 +77,6 @@ export async function getProducts() {
 export async function purchaseProduct(productId) {
   const IAP = getIAP();
   if (!IAP) throw new Error('개발 빌드에서만 결제할 수 있어요.');
-  console.log('[IAP] purchaseProduct called with:', productId);
   await IAP.requestPurchase({
     request: {
       apple: { sku: productId },
@@ -91,6 +89,9 @@ export async function purchaseProduct(productId) {
 export async function restorePurchases() {
   const IAP = getIAP();
   if (!IAP) return false;
+  try {
+    await IAP.initConnection();
+  } catch (_) {}
   const purchases = (await IAP.getAvailablePurchases()) || [];
   const hasPremium = purchases.some(item => item.productId === PRODUCTS.LIFETIME);
   if (hasPremium) await setPremium();

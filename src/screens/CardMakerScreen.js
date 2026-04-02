@@ -207,11 +207,21 @@ export default function CardMakerScreen() {
       const premWeeks = parseInt(prematureWeeks) || 0;
       const correctedDiffDays = Math.max(0, diffDays - premWeeks * 7);
       const correctedBirth = new Date(birth.getTime() + premWeeks * 7 * 24 * 60 * 60 * 1000);
+      correctedBirth.setHours(0, 0, 0, 0);
       const correctedRawMonths = (today.getFullYear() - correctedBirth.getFullYear()) * 12 + (today.getMonth() - correctedBirth.getMonth());
       const correctedMonths = Math.min(12, Math.max(0, today.getDate() >= correctedBirth.getDate() ? correctedRawMonths : correctedRawMonths - 1));
+      // 이번 달 시작일(교정기준) 이후 며칠인지로 주 계산
+      // setMonth는 월말일 overflow 발생 가능 → Date 생성자로 직접 계산 후 말일 클램프
+      const tYear = correctedBirth.getFullYear();
+      const tMonth = correctedBirth.getMonth() + correctedMonths;
+      const lastDayOfMonth = new Date(tYear, tMonth + 1, 0).getDate();
+      const monthStart = new Date(tYear, tMonth, Math.min(correctedBirth.getDate(), lastDayOfMonth));
+      monthStart.setHours(0, 0, 0, 0);
+      const daysIntoMonth = Math.floor((today - monthStart) / (1000 * 60 * 60 * 24));
+      const weeksInMonth = Math.max(0, Math.floor(daysIntoMonth / 7));
       corrected = {
         days: correctedDiffDays + 1,
-        weeks: Math.floor(correctedDiffDays / 7),
+        weeks: weeksInMonth,
         months: correctedMonths,
       };
     }
@@ -400,7 +410,7 @@ export default function CardMakerScreen() {
                     <View style={styles.correctedBox}>
                       <Text style={styles.correctedTitle}>👶 교정나이</Text>
                       <Text style={styles.correctedValue}>
-                        {ageInfo.corrected.months}개월 {ageInfo.corrected.weeks % 4}주
+                        {ageInfo.corrected.months}개월 {ageInfo.corrected.weeks}주
                       </Text>
                       <Text style={styles.correctedSub}>
                         실제 {ageInfo.months}개월 — 조산 {prematureWeeks}주 보정
