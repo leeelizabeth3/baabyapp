@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  Alert, ScrollView, ActivityIndicator,
+  Alert, ScrollView, ActivityIndicator, Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, disconnectIAP, PRODUCTS, addPurchaseListener, restorePurchases } from '../utils/purchase';
@@ -172,12 +172,26 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           }
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.restoreBtn}
+          onPress={handleRestore}
+          disabled={!!loading}
+        >
+          {loading === 'restore'
+            ? <ActivityIndicator color="#A09070" size="small" />
+            : <Text style={styles.restoreBtnText}>이전 구매 복원하기</Text>
+          }
+        </TouchableOpacity>
+
         {onClose && (
           <TouchableOpacity style={styles.laterBtn} onPress={onClose}>
             <Text style={styles.laterBtnText}>나중에 하기</Text>
           </TouchableOpacity>
         )}
 
+        <TouchableOpacity onPress={() => Linking.openURL('https://leeelizabeth3.github.io/babysteps-privacy/')}>
+          <Text style={styles.legal}>개인정보 처리방침</Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </View>
