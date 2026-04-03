@@ -33,7 +33,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
       setLoading(null);
       Alert.alert(
         '🎉 프리미엄 활성화!',
-        '이제 모든 테마를 무제한으로 사용할 수 있어요!\n\n수익은 전액 베이비박스 기부에 사용됩니다 ❤️'
+        '이제 모든 테마를 무제한으로 사용할 수 있어요!'
       );
       onPurchaseSuccess?.();
     });
@@ -158,18 +158,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           <Text style={styles.patternHint}>카드 배경에 예쁜 패턴을 입혀보세요 ✨</Text>
         </View>
 
-        {/* 기부 배너 */}
-        <View style={styles.donationBanner}>
-          <Text style={styles.donationEmoji}>❤️</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.donationTitle}>수익 100% 기부</Text>
-            <Text style={styles.donationText}>
-              앱 수익은 전액 베이비박스 기부에 사용돼요.
-              구매 한 번이 도움이 필요한 아기에게 전달됩니다 🍼
-            </Text>
-          </View>
-        </View>
-
         {/* 구매 버튼 */}
         <TouchableOpacity
           style={styles.buyBtn}
@@ -190,12 +178,6 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} disabled={!!loading}>
-          {loading === 'restore'
-            ? <ActivityIndicator color="#A09070" size="small" />
-            : <Text style={styles.restoreBtnText}>이미 구매했나요? 복원하기</Text>
-          }
-        </TouchableOpacity>
 
       </ScrollView>
     </View>
@@ -232,14 +214,6 @@ const styles = StyleSheet.create({
   themeChipName: { fontSize: 9, color: '#8A7050', textAlign: 'center' },
   lockIcon: { fontSize: 10 },
   patternHint: { fontSize: 11, color: '#8A7050', marginTop: 10, textAlign: 'center' },
-  donationBanner: {
-    backgroundColor: '#FFF0F0', borderRadius: 14,
-    padding: 14, flexDirection: 'row', gap: 12,
-    marginBottom: 20, borderWidth: 1, borderColor: '#FFD0D0',
-  },
-  donationEmoji: { fontSize: 26 },
-  donationTitle: { fontSize: 14, fontWeight: '800', color: '#C04040', marginBottom: 3 },
-  donationText: { fontSize: 12, color: '#8A4040', lineHeight: 18 },
   planTitle: { fontSize: 16, fontWeight: '800', color: '#5A3A10', marginBottom: 12 },
   planRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   planCard: {
