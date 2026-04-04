@@ -83,7 +83,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         <View style={styles.alreadyWrap}>
           <Text style={styles.alreadyEmoji}>🎉</Text>
           <Text style={styles.alreadyTitle}>프리미엄 사용 중이에요!</Text>
-          <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종을 자유롭게 사용하세요 🐾</Text>
+          <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종 + 사진 크기 크게를 자유롭게 사용하세요 🐾</Text>
           {onClose && (
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>닫기</Text>
@@ -156,6 +156,12 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
             ))}
           </View>
           <Text style={styles.patternHint}>카드 배경에 예쁜 패턴을 입혀보세요 ✨</Text>
+        </View>
+
+        {/* 사진 크기 */}
+        <View style={[styles.themeSection, styles.premiumThemeSection]}>
+          <Text style={styles.themeSectionLabel}>📐 사진 크기 크게</Text>
+          <Text style={styles.patternHint}>카드 사진을 더 크게 키워 아기 얼굴을 돋보이게 해요 🍼</Text>
         </View>
 
         {/* 구매 버튼 */}

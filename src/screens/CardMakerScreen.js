@@ -45,6 +45,11 @@ const PATTERN_OPTIONS = [
   { key: 'hex',     label: '육각형' },
   { key: 'stars',   label: '별' },
 ];
+const PHOTO_SIZE_OPTIONS = [
+  { key: 'medium', label: '보통', size: 130, premium: false },
+  { key: 'large',  label: '크게', size: 170, premium: true },
+];
+
 // ── 100일 알림 스케줄 ──────────────────────────
 async function schedule100DayNotification(babyName, birthdateStr) {
   try {
@@ -75,7 +80,7 @@ async function schedule100DayNotification(babyName, birthdateStr) {
 }
 
 const { width: SW } = Dimensions.get('window');
-const CARD_WIDTH = SW - 32;
+const CARD_WIDTH = SW; // Full-width for Instagram sharing
 
 const MONTHS = Array.from({ length: 13 }, (_, i) => ({ label: `${i}개월`, value: String(i) }));
 
@@ -109,6 +114,58 @@ function MonthDropdown({ value, onChange }) {
                   {value === m.value && <Text style={styles.dropdownItemCheck}>✓</Text>}
                 </TouchableOpacity>
               ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+}
+
+function ThemeDropdown({ value, onChange, userIsPremium, onPressLocked }) {
+  const [open, setOpen] = useState(false);
+  const selected = THEME_LIST.find(t => t.key === value) || THEME_LIST[0];
+  return (
+    <>
+      <TouchableOpacity
+        style={[styles.dropdownBtn, { borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10, backgroundColor: '#FFFDF5', paddingHorizontal: 12, paddingVertical: 10 }]}
+        onPress={() => setOpen(true)}
+        activeOpacity={0.8}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+          <View style={{ width: 36, height: 32, borderRadius: 8, backgroundColor: selected.swatchColors[0], alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 20 }}>{selected.swatchIcon}</Text>
+          </View>
+          <Text style={styles.dropdownBtnText}>{selected.name}</Text>
+        </View>
+        <Text style={styles.dropdownArrow}>▼</Text>
+      </TouchableOpacity>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <TouchableOpacity style={styles.dropdownOverlay} activeOpacity={1} onPress={() => setOpen(false)}>
+          <View style={[styles.dropdownList, { width: 290, maxHeight: 420 }]}>
+            <Text style={styles.dropdownListTitle}>🎨 테마 선택</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {THEME_LIST.map(theme => {
+                const locked = !isThemeFree(theme.key) && !userIsPremium;
+                const active = value === theme.key;
+                return (
+                  <TouchableOpacity
+                    key={theme.key}
+                    style={[styles.dropdownItem, active && styles.dropdownItemActive, { gap: 10 }]}
+                    onPress={() => {
+                      if (locked) { setOpen(false); onPressLocked(); }
+                      else { onChange(theme.key); setOpen(false); }
+                    }}
+                  >
+                    <View style={{ width: 44, height: 38, borderRadius: 9, backgroundColor: theme.swatchColors[0], alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 22 }}>{theme.swatchIcon}</Text>
+                    </View>
+                    <Text style={[styles.dropdownItemText, active && styles.dropdownItemTextActive, { flex: 1 }]}>{theme.name}</Text>
+                    {locked && <Text style={{ fontSize: 14 }}>🔒</Text>}
+                    {active && !locked && <Text style={styles.dropdownItemCheck}>✓</Text>}
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         </TouchableOpacity>
@@ -179,6 +236,7 @@ export default function CardMakerScreen() {
   const [userIsPremium, setUserIsPremium] = useState(false);
   const [selectedFont, setSelectedFont] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState('none');
+  const [photoSize, setPhotoSize] = useState('medium');
 
   useFocusEffect(useCallback(() => {
     isPremium().then(setUserIsPremium);
@@ -531,10 +589,10 @@ export default function CardMakerScreen() {
             <FormField label="💉 접종내역">
               <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (01/26)" />
             </FormField>
-            <FormField label="❤️ 좋아하는 것">
+            <FormField label="❤️ 좋아해요">
               <StyledInput value={likes} onChangeText={setLikes} placeholder={"타이니 모빌\n트립트랩 뉴본"} multiline />
             </FormField>
-            <FormField label="😤 싫어하는 것">
+            <FormField label="😤 싫어해요">
               <StyledInput value={dislikes} onChangeText={setDislikes} placeholder={"아기침대에서 자기\n목욕하기"} multiline />
             </FormField>
             <FormField label="✨ 특이사항">
@@ -563,6 +621,28 @@ export default function CardMakerScreen() {
                 <Text style={{ color: '#E06040', fontSize: 13 }}>✕ 사진 삭제</Text>
               </TouchableOpacity>
             )}
+
+            {/* Photo size picker */}
+            <View style={[styles.fontPickerSection, { marginTop: 14 }]}>
+              <Text style={styles.fontPickerLabel}>📐 사진 크기</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {PHOTO_SIZE_OPTIONS.map(opt => {
+                  const locked = opt.premium && !userIsPremium;
+                  return (
+                    <TouchableOpacity
+                      key={opt.key}
+                      style={[styles.chip, { flex: 1, alignItems: 'center' }, photoSize === opt.key && styles.chipActive]}
+                      onPress={() => locked ? setShowPremium(true) : setPhotoSize(opt.key)}
+                    >
+                      <Text style={[styles.chipText, photoSize === opt.key && styles.chipTextActive]}>
+                        {opt.label}{locked ? ' 🔒' : ''}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
           </Card>
         </View>
 
@@ -570,43 +650,12 @@ export default function CardMakerScreen() {
         <View style={styles.sec}>
           <SectionTitle>🎨 테마 선택</SectionTitle>
           <Card>
-            <View style={styles.themeGrid}>
-              {THEME_LIST.map(theme => {
-                const locked = !isThemeFree(theme.key) && !userIsPremium;
-                return (
-                  <TouchableOpacity
-                    key={theme.key}
-                    style={[
-                      styles.themeSwatch,
-                      selectedTheme === theme.key && styles.themeSwatchActive,
-                      locked && styles.themeSwatchLocked,
-                    ]}
-                    onPress={() => {
-                      if (locked) {
-                        setShowPremium(true);
-                      } else {
-                        setSelectedTheme(theme.key);
-                      }
-                    }}
-                  >
-                    <View style={[styles.swatchPreview, { backgroundColor: theme.swatchColors[0] }]}>
-                      <Text style={{ fontSize: 22 }}>{theme.swatchIcon}</Text>
-                      {locked && (
-                        <View style={styles.lockOverlay}>
-                          <Text style={{ fontSize: 16 }}>🔒</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={styles.swatchName}>{theme.name}</Text>
-                    {selectedTheme === theme.key && !locked && (
-                      <View style={styles.swatchCheck}>
-                        <Text style={{ color: '#fff', fontSize: 10 }}>✓</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <ThemeDropdown
+              value={selectedTheme}
+              onChange={setSelectedTheme}
+              userIsPremium={userIsPremium}
+              onPressLocked={() => setShowPremium(true)}
+            />
 
             {/* 폰트 선택 */}
             <View style={styles.fontPickerSection}>
@@ -698,6 +747,7 @@ export default function CardMakerScreen() {
               likes={likes}
               special={special}
               photoUri={photoUri}
+              photoSize={photoSize}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
               {saving ? '저장 중...' : '💾 사진첩 & 앨범에 저장하기'}
@@ -755,7 +805,7 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize },
   ref
 ) {
   const titleFf = fontOverride != null ? fontOverride
@@ -775,7 +825,7 @@ const BabyCard = React.forwardRef(function BabyCard(
     }[patternOverride] || null;
   })();
 
-  const cardW = SW - 32;
+  const cardW = SW;
 
   function InfoBlock({ tag, content, flex }) {
     if (!content) return <View style={{ flex: flex || 1 }} />;
@@ -790,8 +840,8 @@ const BabyCard = React.forwardRef(function BabyCard(
   }
 
   return (
-    <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW - 32 }]}>
-      <CardPattern pattern={effectivePattern} width={SW - 32} />
+    <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW }]}>
+      <CardPattern pattern={effectivePattern} width={SW} />
       {/* Corner decos */}
       <Text style={[cardStyles.deco, { top: 8, left: 12, transform: [{ rotate: '-15deg' }] }]}>{t.emoji[0]}</Text>
       <Text style={[cardStyles.deco, { top: 8, right: 12, transform: [{ rotate: '12deg' }] }]}>{t.emoji[1]}</Text>
@@ -830,15 +880,21 @@ const BabyCard = React.forwardRef(function BabyCard(
         </View>
         <View style={{ width: 6 }} />
         {/* Photo circle */}
-        <View style={[cardStyles.photoCircle, {
-          borderColor: t.photoBorder,
-          backgroundColor: t.photoBg[0],
-        }]}>
-          {photoUri
-            ? <Image source={{ uri: photoUri }} style={cardStyles.photoImg} />
-            : <Text style={{ fontSize: 44, opacity: 0.5 }}>🍼</Text>
-          }
-        </View>
+        {(() => {
+          const photoSizeVal = PHOTO_SIZE_OPTIONS.find(o => o.key === (photoSize || 'medium'))?.size || 130;
+          return (
+            <View style={[cardStyles.photoCircle, {
+              width: photoSizeVal, height: photoSizeVal, borderRadius: photoSizeVal / 2,
+              borderColor: t.photoBorder,
+              backgroundColor: t.photoBg[0],
+            }]}>
+              {photoUri
+                ? <Image source={{ uri: photoUri }} style={cardStyles.photoImg} />
+                : <Text style={{ fontSize: 44, opacity: 0.5 }}>🍼</Text>
+              }
+            </View>
+          );
+        })()}
         <View style={{ width: 6 }} />
         <View style={{ flex: 1, gap: 6 }}>
           <InfoBlock tag="🧷 기저귀" content={diaper} />
@@ -980,7 +1036,7 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 4, right: 4, width: 16, height: 16,
     backgroundColor: '#5A3A10', borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
-  cardSection: { marginTop: 20 },
+  cardSection: { marginTop: 20, marginHorizontal: -16 },
   cardHint: { fontSize: 12, color: '#8A7050', textAlign: 'center', marginBottom: 10 },
   premToggle: {
     flexDirection: 'row', alignItems: 'center', marginBottom: 10, marginTop: 2,
