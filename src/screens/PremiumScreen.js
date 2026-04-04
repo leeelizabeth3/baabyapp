@@ -83,7 +83,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         <View style={styles.alreadyWrap}>
           <Text style={styles.alreadyEmoji}>🎉</Text>
           <Text style={styles.alreadyTitle}>프리미엄 사용 중이에요!</Text>
-          <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종 + 사진 크기 크게를 자유롭게 사용하세요 🐾</Text>
+          <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종 + 폰트 3종 + 사진 크기 크게를 자유롭게 사용하세요 🐾</Text>
           {onClose && (
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>닫기</Text>
@@ -102,7 +102,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
         <View style={styles.header}>
           <Text style={styles.headerEmoji}>✨</Text>
           <Text style={styles.headerTitle}>BabySteps Premium</Text>
-          <Text style={styles.headerSub}>더 많은 테마로 특별한 추억을 만들어요</Text>
+          <Text style={styles.headerSub}>더 많은 테마와 폰트로 특별한 추억을 만들어요</Text>
         </View>
 
         {/* 무료 테마 */}
@@ -158,6 +158,26 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           <Text style={styles.patternHint}>카드 배경에 예쁜 패턴을 입혀보세요 ✨</Text>
         </View>
 
+        {/* 폰트 */}
+        <View style={[styles.themeSection, styles.premiumThemeSection]}>
+          <Text style={styles.themeSectionLabel}>✏️ 프리미엄 폰트 (3종)</Text>
+          <View style={styles.themeRow}>
+            {[
+              { label: '멜로디체', font: 'HiMelody_400Regular' },
+              { label: '개구체',   font: 'Gaegu_400Regular' },
+              { label: '주아체',   font: 'Jua_400Regular' },
+            ].map(f => (
+              <View key={f.label} style={styles.themeChip}>
+                <View style={[styles.themeChipDot, { backgroundColor: '#FFF0F5' }]}>
+                  <Text style={{ fontSize: 13, fontFamily: f.font }}>가나다</Text>
+                </View>
+                <Text style={styles.themeChipName}>{f.label}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.patternHint}>테마 기본 · 감자꽃체 · 귀여운체는 무료로 사용하세요 🆓</Text>
+        </View>
+
         {/* 사진 크기 */}
         <View style={[styles.themeSection, styles.premiumThemeSection]}>
           <Text style={styles.themeSectionLabel}>📐 사진 크기 크게</Text>
@@ -173,7 +193,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
           {loading === 'lifetime'
             ? <ActivityIndicator color="#5A3A10" />
             : <Text style={styles.buyBtnText}>
-                {products[PRODUCTS.LIFETIME]?.displayPrice ?? '$2.99'} — 지금 구매하기 ✨
+                {products[PRODUCTS.LIFETIME]?.displayPrice ?? 'S$3.98'} — 지금 구매하기 ✨
               </Text>
           }
         </TouchableOpacity>

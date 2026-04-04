@@ -29,12 +29,12 @@ const FONTS = {
 };
 
 const FONT_OPTIONS = [
-  { key: null,                     label: '테마 기본', sample: '아기 성장' },
-  { key: 'GamjaFlower_400Regular', label: '감자꽃체',  sample: '아기 성장' },
-  { key: 'CuteFont_400Regular',    label: '귀여운체',  sample: '아기 성장' },
-  { key: 'HiMelody_400Regular',    label: '멜로디체',  sample: '아기 성장' },
-  { key: 'Gaegu_400Regular',       label: '개구체',    sample: '아기 성장' },
-  { key: 'Jua_400Regular',         label: '주아체',    sample: '아기 성장' },
+  { key: null,                     label: '테마 기본', sample: '아기 성장', premium: false },
+  { key: 'GamjaFlower_400Regular', label: '감자꽃체',  sample: '아기 성장', premium: false },
+  { key: 'CuteFont_400Regular',    label: '귀여운체',  sample: '아기 성장', premium: false },
+  { key: 'HiMelody_400Regular',    label: '멜로디체',  sample: '아기 성장', premium: true },
+  { key: 'Gaegu_400Regular',       label: '개구체',    sample: '아기 성장', premium: true },
+  { key: 'Jua_400Regular',         label: '주아체',    sample: '아기 성장', premium: true },
 ];
 
 const PATTERN_OPTIONS = [
@@ -663,13 +663,17 @@ export default function CardMakerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
                 {FONT_OPTIONS.map(opt => {
                   const active = selectedFont === opt.key;
+                  const locked = opt.premium && !userIsPremium;
                   return (
                     <TouchableOpacity
                       key={String(opt.key)}
-                      onPress={() => setSelectedFont(opt.key)}
+                      onPress={() => locked ? setShowPremium(true) : setSelectedFont(opt.key)}
                       style={[styles.fontChip, active && styles.fontChipActive]}
                     >
-                      <Text style={[styles.fontChipSample, { fontFamily: opt.key || undefined }]}>{opt.sample}</Text>
+                      <View style={{ position: 'relative' }}>
+                        <Text style={[styles.fontChipSample, { fontFamily: opt.key || undefined, opacity: locked ? 0.4 : 1 }]}>{opt.sample}</Text>
+                        {locked && <Text style={{ position: 'absolute', top: -4, right: -4, fontSize: 12 }}>🔒</Text>}
+                      </View>
                       <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{opt.label}</Text>
                     </TouchableOpacity>
                   );
