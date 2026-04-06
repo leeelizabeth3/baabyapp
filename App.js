@@ -12,6 +12,7 @@ import AlbumScreen from './src/screens/AlbumScreen';
 import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
 import CelebrationScreen from './src/screens/CelebrationScreen';
+import FirstYearCollageScreen from './src/screens/FirstYearCollageScreen';
 
 import { useFonts } from 'expo-font';
 import { GamjaFlower_400Regular } from '@expo-google-fonts/gamja-flower';
@@ -74,6 +75,14 @@ export default function App() {
           }}
         >
           <Tab.Screen
+            name="Growth"
+            component={GrowthScreen}
+            options={{
+              tabBarLabel: '성장 추적',
+              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📈</Text>,
+            }}
+          />
+          <Tab.Screen
             name="CardMaker"
             component={CardMakerScreen}
             options={{
@@ -90,19 +99,19 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="Growth"
-            component={GrowthScreen}
-            options={{
-              tabBarLabel: '성장 추적',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📈</Text>,
-            }}
-          />
-          <Tab.Screen
             name="Celebration"
             component={CelebrationScreen}
             options={{
               tabBarLabel: '기념일',
               tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>🎊</Text>,
+            }}
+          />
+          <Tab.Screen
+            name="FirstYearCollage"
+            component={FirstYearCollageScreen}
+            options={{
+              tabBarLabel: '콜라주',
+              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>🎞</Text>,
             }}
           />
           <Tab.Screen

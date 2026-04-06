@@ -10,30 +10,35 @@ import { LineChart } from 'react-native-chart-kit';
 import Svg, { Circle } from 'react-native-svg';
 
 import { AppHeader, Card, SectionTitle, PrimaryButton, COLORS } from '../components/UI';
-import { WHO_WEIGHT, WHO_HEIGHT, WHO_HEAD, getPercentile, getZone, PCT_MARKS } from '../data/whoData';
-import { getGrowthRecords, saveGrowthRecord, deleteGrowthRecord, getBabyProfile, saveBabyProfile } from '../utils/storage';
+import { WHO_WEIGHT, WHO_HEIGHT, WHO_HEAD, getPercentile, getZone, PCT_MARKS, CHART_MONTHS, nearestChartMonth, formatAge } from '../data/whoData';
+import { MILESTONES } from '../data/milestones';
+import { getGrowthRecords, saveGrowthRecord, deleteGrowthRecord, getBabyProfile, saveBabyProfile, getMilestoneChecks, toggleMilestoneCheck } from '../utils/storage';
 
 const { width: SW } = Dimensions.get('window');
-const MONTHS = Array.from({ length: 13 }, (_, i) => i);
-const MONTH_OPTIONS = MONTHS.map(m => ({ label: `${m}개월`, value: String(m) }));
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => i); // 0~4세
+const MONTH_OFFSETS = Array.from({ length: 12 }, (_, i) => i); // 0~11개월
 
-export default function GrowthScreen() {
+export default function GrowthScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [subTab, setSubTab] = useState('entry');
   const [babyName, setBabyName] = useState('');
   const [gender, setGender] = useState('girl');
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [ageYear, setAgeYear] = useState(null);
+  const [ageMonthOff, setAgeMonthOff] = useState(0);
   const [measDate, setMeasDate] = useState(new Date().toISOString().split('T')[0]);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [head, setHead] = useState('');
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
+  const [milestoneMonth, setMilestoneMonth] = useState(0);
+  const [checks, setChecks] = useState({});
 
   useFocusEffect(
     useCallback(() => {
       getBabyProfile().then(p => { setBabyName(p.name || ''); setGender(p.gender || 'girl'); });
       getGrowthRecords().then(setRecords);
+      getMilestoneChecks().then(setChecks);
     }, [])
   );
 
@@ -44,8 +49,8 @@ export default function GrowthScreen() {
   };
 
   const calcPercentiles = () => {
-    if (!selectedMonth) { Alert.alert('개월 수를 선택해주세요!'); return; }
-    const mo = parseInt(selectedMonth);
+    if (ageYear === null) { Alert.alert('나이를 선택해주세요!'); return; }
+    const mo = Math.min(ageYear * 12 + ageMonthOff, 48);
     const h = parseFloat(height), w = parseFloat(weight), hc = parseFloat(head);
     if (isNaN(h) && isNaN(w) && isNaN(hc)) {
       Alert.alert('최소 한 가지 측정값을 입력해주세요!'); return;
@@ -61,7 +66,7 @@ export default function GrowthScreen() {
       body = 'P3 미만 또는 P97 초과 수치가 있어요. 소아과에서 상담받아 보세요.';
     } else if (all.some(p => p < 15)) {
       icon = '💙'; title = '조금 작은 편이에요';
-      body = '평균보다 작지만 정상 범위 안에 있어요. 꾸준한 수유와 영양이 중요해요!';
+      body = '평균보다 작지만 정상 범위 안에 있어요. 꾸준한 영양 섭취가 중요해요!';
     } else if (all.some(p => p > 85)) {
       icon = '🌟'; title = '씩씩하게 자라고 있어요!';
       body = '또래보다 큰 편이에요. 건강하게 성장하고 있답니다.';
@@ -106,7 +111,7 @@ export default function GrowthScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="📈 성장 추적" subtitle="WHO 기준 백분위수" />
+      <AppHeader title="📈 성장 추적" subtitle="WHO 기준 백분위수 · 0~4세" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Baby profile */}
@@ -139,7 +144,7 @@ export default function GrowthScreen() {
 
         {/* Sub-tabs */}
         <View style={styles.subTabRow}>
-          {[['entry','📏 측정 입력'], ['history','📋 기록'], ['chart','📈 그래프']].map(([key, label]) => (
+          {[['entry','📏 입력'], ['history','📋 기록'], ['chart','📈 그래프'], ['milestone','🌱 발달']].map(([key, label]) => (
             <TouchableOpacity
               key={key}
               style={[styles.subTab, subTab === key && styles.subTabActive]}
@@ -159,23 +164,48 @@ export default function GrowthScreen() {
 
             <Card>
               <Text style={styles.entrySubtitle}>📅 측정 정보</Text>
-              {/* Month selector */}
-              <Text style={styles.fieldLabel}>개월 수</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+              {/* Age selector: Year + Month */}
+              <Text style={styles.fieldLabel}>나이 선택 (0~4세)</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {MONTH_OPTIONS.map(m => (
+                  {YEAR_OPTIONS.map(y => (
                     <TouchableOpacity
-                      key={m.value}
-                      style={[styles.chip, selectedMonth === m.value && styles.chipActive]}
-                      onPress={() => setSelectedMonth(m.value)}
+                      key={y}
+                      style={[styles.chip, ageYear === y && styles.chipActive]}
+                      onPress={() => { setAgeYear(y); setAgeMonthOff(0); }}
                     >
-                      <Text style={[styles.chipText, selectedMonth === m.value && styles.chipActiveText]}>
-                        {m.label}
+                      <Text style={[styles.chipText, ageYear === y && styles.chipActiveText]}>
+                        {y}세
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </ScrollView>
+              {ageYear !== null && (
+                <>
+                  <Text style={[styles.fieldLabel, { marginTop: 4 }]}>+개월</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                    <View style={{ flexDirection: 'row', gap: 6 }}>
+                      {MONTH_OFFSETS.filter(m => ageYear * 12 + m <= 48).map(m => (
+                        <TouchableOpacity
+                          key={m}
+                          style={[styles.chip, ageMonthOff === m && styles.chipActive]}
+                          onPress={() => setAgeMonthOff(m)}
+                        >
+                          <Text style={[styles.chipText, ageMonthOff === m && styles.chipActiveText]}>
+                            +{m}개월
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
+                  <View style={styles.ageDisplay}>
+                    <Text style={styles.ageDisplayText}>
+                      선택된 나이: {formatAge(Math.min(ageYear * 12 + ageMonthOff, 48))} ({Math.min(ageYear * 12 + ageMonthOff, 48)}개월)
+                    </Text>
+                  </View>
+                </>
+              )}
 
               <Text style={styles.fieldLabel}>측정일</Text>
               <TextInput
@@ -216,7 +246,8 @@ export default function GrowthScreen() {
                   </View>
                 </Card>
 
-                {/* 수유 권장량 */}
+                {/* 수유 권장량 - 0세(0~12개월)만 표시 */}
+                {result.mo <= 12 && (
                 <Card style={styles.feedCard}>
                   <Text style={styles.feedTitle}>🍼 수유 권장량</Text>
                   {result.w && <Text style={styles.feedBasis}>체중 {result.w}kg 기준</Text>}
@@ -244,6 +275,7 @@ export default function GrowthScreen() {
                   )}
                   <Text style={styles.feedDisclaimer}>* 모유/분유 공통 참고값. 아기마다 차이가 있어요.</Text>
                 </Card>
+                )}
 
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                   <Text style={styles.saveBtnText}>📋 기록 저장하기</Text>
@@ -251,7 +283,7 @@ export default function GrowthScreen() {
 
                 <View style={styles.disclaimer}>
                   <Text style={styles.disclaimerText}>
-                    ⚠️ WHO 기준 참고용. P3 미만 또는 P97 초과 시 소아과 상담 권장.
+                    ⚠️ WHO 기준 참고용 (0~4세). P3 미만 또는 P97 초과 시 소아과 상담 권장.
                   </Text>
                 </View>
               </>
@@ -272,11 +304,11 @@ export default function GrowthScreen() {
                 <Card key={r.id} style={styles.recCard}>
                   <View style={styles.recRow}>
                     <View style={styles.recBadge}>
-                      <Text style={styles.recAge}>{r.month}</Text>
-                      <Text style={styles.recUnit}>개월</Text>
+                      <Text style={styles.recAge}>{r.month < 24 ? r.month : Math.floor(r.month / 12)}</Text>
+                      <Text style={styles.recUnit}>{r.month < 24 ? '개월' : '세'}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.recDate}>{r.date} · {r.sex === 'girl' ? '👧' : '👦'} {r.name}</Text>
+                      <Text style={styles.recDate}>{r.date} · {r.sex === 'girl' ? '👧' : '👦'} {r.name} · {formatAge(r.month)}</Text>
                       <View style={styles.recVals}>
                         {r.h !== null && <RecVal icon="📐" val={`${r.h}cm`} pct={r.pH} />}
                         {r.w !== null && <RecVal icon="⚖️" val={`${r.w}kg`} pct={r.pW} />}
@@ -292,18 +324,142 @@ export default function GrowthScreen() {
         )}
 
         {/* ── CHART ── */}
-        {subTab === 'chart' && (
+        {subTab === 'chart' && (() => {
+          // Determine chart range from records: ceil up to nearest year, min 12 months
+          const maxRec = records.length > 0 ? Math.max(...records.map(r => r.month)) : 0;
+          const chartMaxMonth = records.length > 0
+            ? Math.max(12, Math.ceil(maxRec / 12) * 12)
+            : 12;
+          return (
           <>
-            <GrowthChart title="⚖️ 몸무게" table={WHO_WEIGHT} field="w" gender={gender} records={records} color="#E8823A" unit="kg" />
-            <GrowthChart title="📐 키" table={WHO_HEIGHT} field="h" gender={gender} records={records} color="#7DC87A" unit="cm" />
-            <GrowthChart title="🧠 머리둘레" table={WHO_HEAD} field="hc" gender={gender} records={records} color="#7AB8DC" unit="cm" />
+            <GrowthChart title="⚖️ 몸무게" table={WHO_WEIGHT} field="w" gender={gender} records={records} color="#E8823A" unit="kg" maxChartMonth={chartMaxMonth} />
+            <GrowthChart title="📐 키" table={WHO_HEIGHT} field="h" gender={gender} records={records} color="#7DC87A" unit="cm" maxChartMonth={chartMaxMonth} />
+            <GrowthChart title="🧠 머리둘레" table={WHO_HEAD} field="hc" gender={gender} records={records} color="#7AB8DC" unit="cm" maxChartMonth={chartMaxMonth} />
             <View style={styles.disclaimer}>
               <Text style={styles.disclaimerText}>
-                WHO P3·P15·P50(평균)·P85·P97 기준선 / 빨간 점 = 우리 아기
+                WHO P3·P15·P50(평균)·P85·P97 기준선 (0~{chartMaxMonth / 12}세) / 빨간 점 = 우리 아기
               </Text>
             </View>
           </>
-        )}
+          );
+        })()}
+
+        {/* ── MILESTONE ── */}
+        {subTab === 'milestone' && (() => {
+          const ms = MILESTONES[milestoneMonth];
+          const totalItems = ms.checkItems.length;
+          const checkedCount = ms.checkItems.filter(item => checks[`${milestoneMonth}_${item.id}`]).length;
+          const allDone = checkedCount === totalItems;
+
+          const handleToggle = async (itemId) => {
+            const updated = await toggleMilestoneCheck(milestoneMonth, itemId);
+            setChecks({ ...updated });
+          };
+
+          return (
+            <>
+              {/* 월령 선택 */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {Array.from({ length: 13 }, (_, i) => i).map(m => (
+                    <TouchableOpacity
+                      key={m}
+                      style={[styles.chip, milestoneMonth === m && styles.chipActive]}
+                      onPress={() => setMilestoneMonth(m)}
+                    >
+                      <Text style={[styles.chipText, milestoneMonth === m && styles.chipActiveText]}>
+                        {m}개월
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+
+              {/* 월령 헤더 */}
+              <Card style={{ marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <Text style={{ fontSize: 32 }}>{ms.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.msTitle}>{ms.stage}</Text>
+                    <Text style={styles.msProgress}>{checkedCount}/{totalItems} 달성</Text>
+                  </View>
+                  {allDone && <Text style={{ fontSize: 24 }}>🏆</Text>}
+                </View>
+
+                {/* 진행 바 */}
+                <View style={styles.msBarTrack}>
+                  <View style={[styles.msBarFill, { width: `${(checkedCount / totalItems) * 100}%` }]} />
+                </View>
+
+                {/* 체크리스트 */}
+                <Text style={[styles.fieldLabel, { marginTop: 14, marginBottom: 8 }]}>
+                  ✅ 발달 체크리스트 (WHO/AAP 기준)
+                </Text>
+                {ms.checkItems.map(item => {
+                  const done = !!checks[`${milestoneMonth}_${item.id}`];
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.msCheckRow, done && styles.msCheckRowDone]}
+                      onPress={() => handleToggle(item.id)}
+                    >
+                      <View style={[styles.msCheckBox, done && styles.msCheckBoxDone]}>
+                        {done && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>✓</Text>}
+                      </View>
+                      <Text style={[styles.msCheckText, done && styles.msCheckTextDone]}>
+                        {item.text}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </Card>
+
+              {/* 달성 축하 배너 */}
+              {allDone && (
+                <Card style={styles.msCelebCard}>
+                  <Text style={styles.msCelebTitle}>🎉 {ms.stage} 마일스톤 완료!</Text>
+                  <Text style={styles.msCelebBody}>
+                    모든 발달 항목을 달성했어요!{'\n'}기념 카드로 특별한 순간을 남겨보세요 💕
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.msCelebBtn}
+                    onPress={() => navigation.navigate('CardMaker', { milestoneMonth, babyName })}
+                  >
+                    <Text style={styles.msCelebBtnText}>📸 기념 카드 만들기 →</Text>
+                  </TouchableOpacity>
+                </Card>
+              )}
+
+              {/* 육아 팁 */}
+              <Card>
+                <Text style={[styles.fieldLabel, { marginBottom: 10 }]}>💡 이번 달 육아 팁</Text>
+                {ms.tips.map((tip, i) => (
+                  <Text key={i} style={styles.msTipText}>{tip}</Text>
+                ))}
+              </Card>
+
+              {/* 놀이 추천 */}
+              <Card style={{ marginTop: 14 }}>
+                <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>🎮 이번 달 놀이 & 장난감 추천</Text>
+                {ms.play.map((item, i) => (
+                  <View key={i} style={[styles.playCard, item.isToy && styles.playCardToy]}>
+                    <View style={styles.playHeader}>
+                      <Text style={styles.playEmoji}>{item.emoji}</Text>
+                      <Text style={[styles.playTitle, item.isToy && styles.playTitleToy]}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.playDesc}>{item.desc}</Text>
+                  </View>
+                ))}
+              </Card>
+
+              <View style={styles.disclaimer}>
+                <Text style={styles.disclaimerText}>
+                  ⚠️ WHO/AAP 기준 참고용. 아기마다 발달 속도가 달라요. 걱정되면 소아과에서 상담하세요.
+                </Text>
+              </View>
+            </>
+          );
+        })()}
 
         <View style={{ height: 30 }} />
       </ScrollView>
@@ -314,7 +470,32 @@ export default function GrowthScreen() {
 // ── Sub-components ──────────────────────────
 
 function getFeedingRec(month, weightKg) {
-  // 개월별 기준 (1회 수유량, 하루 횟수, 체중×배수)
+  // 24개월 이상: 유아식/식사 권장
+  if (month >= 36) {
+    return {
+      dailyTotal: '유아식 3회 + 간식 2회',
+      perFeed: '밥 80~120g',
+      freq: '식사 3회 + 간식 2회',
+      note: '우유 400~500ml, 균형 잡힌 유아식',
+    };
+  }
+  if (month >= 24) {
+    return {
+      dailyTotal: '유아식 3회 + 간식',
+      perFeed: '밥·죽 100~130g',
+      freq: '3끼 + 간식 1~2회',
+      note: '생우유 500ml 이하, 유아식으로 전환',
+    };
+  }
+  if (month >= 13) {
+    return {
+      dailyTotal: '이유식 3회 + 수유',
+      perFeed: '이유식 150~200g',
+      freq: '이유식 3회 + 수유 2~3회',
+      note: '완료기 이유식 — 가족식 형태로 전환',
+    };
+  }
+  // 0~12개월: 기존 수유 권장량
   const table = [
     { perFeed: '60~90ml',   freq: '8~12회', lo: 150, hi: 180 }, // 0
     { perFeed: '90~120ml',  freq: '7~8회',  lo: 150, hi: 180 }, // 1
@@ -424,16 +605,23 @@ function RecVal({ icon, val, pct }) {
   );
 }
 
-function GrowthChart({ title, table, field, gender, records, color, unit }) {
-  const months = Array.from({ length: 13 }, (_, i) => i);
+function GrowthChart({ title, table, field, gender, records, color, unit, maxChartMonth }) {
+  // 0~1세(12개월 이하)면 1개월 단위, 그 이상이면 3개월 단위
+  const isMonthly = maxChartMonth <= 12;
+  const visibleMonths = isMonthly
+    ? Array.from({ length: 13 }, (_, i) => i) // 0~12개월 매달
+    : CHART_MONTHS.filter(m => m <= maxChartMonth);
 
-  const p50 = months.map(m => table[gender][m][2]);
-  const p15 = months.map(m => table[gender][m][1]);
-  const p85 = months.map(m => table[gender][m][3]);
+  const p50 = visibleMonths.map(m => table[gender][m][2]);
+  const p15 = visibleMonths.map(m => table[gender][m][1]);
+  const p85 = visibleMonths.map(m => table[gender][m][3]);
 
-  // Only real data points — no gap filling
-  const userData = months.map(m => {
-    const r = [...records].reverse().find(rec => rec.month === m && rec[field] !== null);
+  // Map user records to chart month
+  const userData = visibleMonths.map(cm => {
+    const r = [...records].reverse().find(rec => {
+      const mapped = isMonthly ? rec.month : nearestChartMonth(rec.month);
+      return mapped === cm && rec[field] !== null;
+    });
     return r ? r[field] : null;
   });
 
@@ -444,18 +632,20 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
   // Chart dimensions (must match LineChart props below)
   const chartW = SW - 52;
   const chartH = 200;
-  const leftPad = 54;   // y-axis label area
+  const leftPad = 54;
   const rightPad = 12;
   const topPad = 16;
-  const bottomPad = 30; // x-axis label area
+  const bottomPad = 30;
   const plotW = chartW - leftPad - rightPad;
   const plotH = chartH - topPad - bottomPad;
 
-  const toX = (m) => leftPad + (m / (months.length - 1)) * plotW;
+  const toX = (idx) => leftPad + (idx / (visibleMonths.length - 1)) * plotW;
   const toY = (val) => topPad + (1 - (val - minVal) / (maxVal - minVal)) * plotH;
 
   const chartData = {
-    labels: months.map(m => m === 0 || m % 3 === 0 ? `${m}m` : ''),
+    labels: isMonthly
+      ? visibleMonths.map(m => `${m}`)   // "0","1","2"…"12"
+      : visibleMonths.map(m => m % 12 === 0 ? `${m / 12}세` : ''),
     datasets: [
       { data: p85, color: () => 'rgba(180,140,80,0.5)', strokeWidth: 1 },
       { data: p50, color: () => color, strokeWidth: 2 },
@@ -481,6 +671,7 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
               labelColor: (opacity = 1) => `rgba(140,110,70,${opacity})`,
               propsForDots: { r: '0' },
               propsForBackgroundLines: { strokeDasharray: '4', stroke: '#F0EAD8' },
+              propsForLabels: { fontSize: isMonthly ? 8 : 11 },
             }}
             bezier
             withDots={false}
@@ -490,10 +681,10 @@ function GrowthChart({ title, table, field, gender, records, color, unit }) {
           />
           {/* Overlay real baby data dots only */}
           <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={chartW} height={chartH}>
-            {userData.map((val, m) => val !== null ? (
+            {userData.map((val, idx) => val !== null ? (
               <Circle
-                key={m}
-                cx={toX(m)}
+                key={idx}
+                cx={toX(idx)}
                 cy={toY(val)}
                 r={5}
                 fill="rgba(200,50,30,1)"
@@ -552,6 +743,11 @@ const styles = StyleSheet.create({
   whoChipText: { fontSize: 11, fontWeight: '600', color: '#3A7040' },
   entrySubtitle: { fontSize: 13, fontWeight: '700', color: '#5A3A10', marginBottom: 12 },
   fieldLabel: { fontSize: 11, color: '#8A7050', fontWeight: '600', marginBottom: 5 },
+  ageDisplay: {
+    backgroundColor: '#FFF8E0', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7,
+    borderWidth: 1.5, borderColor: '#EAD9C0', marginBottom: 12,
+  },
+  ageDisplayText: { fontSize: 13, fontWeight: '700', color: '#C87820', textAlign: 'center' },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1.5, borderColor: '#EAD9C0', backgroundColor: '#FFFDF5' },
   chipActive: { backgroundColor: '#F5C842', borderColor: '#E8A020' },
   chipText: { fontSize: 12, fontWeight: '500', color: '#8A7050' },
@@ -594,4 +790,45 @@ const styles = StyleSheet.create({
   feedDivider: { width: 1, height: 44, backgroundColor: '#F0E5D0' },
   feedNote: { fontSize: 12, color: '#6A8A50', fontWeight: '600', marginBottom: 6 },
   feedDisclaimer: { fontSize: 10, color: '#B0A080' },
+  // Milestone styles
+  msTitle: { fontSize: 16, fontWeight: '800', color: '#5A3A10' },
+  msProgress: { fontSize: 12, color: '#C87820', fontWeight: '600', marginTop: 2 },
+  msBarTrack: { height: 7, backgroundColor: '#F0EBE0', borderRadius: 4, overflow: 'hidden' },
+  msBarFill: { height: '100%', backgroundColor: '#F5C842', borderRadius: 4 },
+  msCheckRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 9, paddingHorizontal: 4,
+    borderBottomWidth: 1, borderBottomColor: '#F5EDD8',
+  },
+  msCheckRowDone: { opacity: 0.65 },
+  msCheckBox: {
+    width: 22, height: 22, borderRadius: 6, borderWidth: 2,
+    borderColor: '#D0C0A0', backgroundColor: '#FFFDF5',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  msCheckBoxDone: { backgroundColor: '#7DC87A', borderColor: '#5AB060' },
+  msCheckText: { flex: 1, fontSize: 13.5, color: '#4A3520', fontWeight: '500' },
+  msCheckTextDone: { textDecorationLine: 'line-through', color: '#A09070' },
+  msCelebCard: { backgroundColor: '#FFF8E0', borderWidth: 2, borderColor: '#F5C842', marginBottom: 14 },
+  msCelebTitle: { fontSize: 17, fontWeight: '800', color: '#C87820', marginBottom: 6 },
+  msCelebBody: { fontSize: 13, color: '#7A6050', lineHeight: 20, marginBottom: 14 },
+  msCelebBtn: {
+    backgroundColor: '#F08050', borderRadius: 12, paddingVertical: 12,
+    alignItems: 'center',
+    shadowColor: '#D05830', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4,
+  },
+  msCelebBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  msTipText: { fontSize: 12.5, color: '#6A5A40', lineHeight: 22 },
+  playCard: {
+    backgroundColor: '#FFFDF5', borderRadius: 10, padding: 11,
+    marginBottom: 8, borderWidth: 1, borderColor: '#EDE0C8',
+  },
+  playCardToy: {
+    backgroundColor: '#FFF8E0', borderColor: '#F5C842',
+  },
+  playHeader: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 5 },
+  playEmoji: { fontSize: 18 },
+  playTitle: { fontSize: 13, fontWeight: '800', color: '#5A3A10' },
+  playTitleToy: { color: '#C87820' },
+  playDesc: { fontSize: 12, color: '#7A6050', lineHeight: 19 },
 });

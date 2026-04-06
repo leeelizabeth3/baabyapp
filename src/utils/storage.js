@@ -5,6 +5,9 @@ const KEYS = {
   ALBUM: 'babyAlbum_v1',
   GROWTH: 'babyGrowth_v1',
   BABY_PROFILE: 'babyProfile_v1',
+  MILESTONE_CHECKS: 'milestoneChecks_v1',
+  FIRST_YEAR_PHOTOS: 'firstYearPhotos_v1',
+  FIRST_YEAR_PROFILE: 'firstYearProfile_v1',
 };
 
 // ── Baby Profile ──────────────────────────────
@@ -74,4 +77,55 @@ export async function deleteGrowthRecord(id) {
     await AsyncStorage.setItem(KEYS.GROWTH, JSON.stringify(updated));
     return updated;
   } catch (e) { console.error(e); return []; }
+}
+
+// ── Milestone Checks ──────────────────────────
+// checks: { "4_c0": true, "4_c2": true, ... }  (month_itemId)
+export async function getMilestoneChecks() {
+  try {
+    const json = await AsyncStorage.getItem(KEYS.MILESTONE_CHECKS);
+    return json ? JSON.parse(json) : {};
+  } catch { return {}; }
+}
+
+export async function toggleMilestoneCheck(month, itemId) {
+  try {
+    const checks = await getMilestoneChecks();
+    const key = `${month}_${itemId}`;
+    if (checks[key]) delete checks[key];
+    else checks[key] = true;
+    await AsyncStorage.setItem(KEYS.MILESTONE_CHECKS, JSON.stringify(checks));
+    return checks;
+  } catch (e) { console.error(e); return {}; }
+}
+
+// ── First Year Collage ─────────────────────────
+// photos: { "0": "firstyear_0_xxx.jpg", "center": "firstyear_center_xxx.jpg", ... }
+export async function getFirstYearPhotos() {
+  try {
+    const json = await AsyncStorage.getItem(KEYS.FIRST_YEAR_PHOTOS);
+    return json ? JSON.parse(json) : {};
+  } catch { return {}; }
+}
+
+export async function saveFirstYearPhoto(slotKey, fileName) {
+  try {
+    const photos = await getFirstYearPhotos();
+    photos[String(slotKey)] = fileName;
+    await AsyncStorage.setItem(KEYS.FIRST_YEAR_PHOTOS, JSON.stringify(photos));
+    return photos;
+  } catch (e) { console.error(e); return {}; }
+}
+
+export async function getFirstYearProfile() {
+  try {
+    const json = await AsyncStorage.getItem(KEYS.FIRST_YEAR_PROFILE);
+    return json ? JSON.parse(json) : { name: '', birthdate: '', bgColor: '#F5EDD8' };
+  } catch { return { name: '', birthdate: '', bgColor: '#F5EDD8' }; }
+}
+
+export async function saveFirstYearProfile(profile) {
+  try {
+    await AsyncStorage.setItem(KEYS.FIRST_YEAR_PROFILE, JSON.stringify(profile));
+  } catch (e) { console.error(e); }
 }

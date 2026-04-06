@@ -18,7 +18,6 @@ import {
   FormField, StyledInput, RowFields, COLORS,
 } from '../components/UI';
 import { THEME_LIST, THEMES } from '../data/themes';
-import { MILESTONES } from '../data/milestones';
 import { saveAlbumRecord, getBabyProfile, saveBabyProfile } from '../utils/storage';
 import { canUseTheme, isThemeFree, isPremium } from '../utils/purchase';
 import PremiumScreen from './PremiumScreen';
@@ -201,7 +200,7 @@ function PatternSwatch({ patternKey, label, active, onPress }) {
   );
 }
 
-export default function CardMakerScreen() {
+export default function CardMakerScreen({ route }) {
   const insets = useSafeAreaInsets();
   const cardRef = useRef(null);
 
@@ -245,7 +244,11 @@ export default function CardMakerScreen() {
       if (profile.birthdate && !birthdate) setBirthdate(profile.birthdate);
       if (profile.name && !name) setName(profile.name);
     });
-  }, []));
+    // 발달 마일스톤에서 넘어온 경우 월령 자동 세팅
+    if (route?.params?.milestoneMonth !== undefined) {
+      setMonth(String(route.params.milestoneMonth));
+    }
+  }, [route?.params?.milestoneMonth]));
   const ageInfo = useMemo(() => {
     if (!birthdate) return null;
     const birth = new Date(birthdate);
@@ -370,7 +373,7 @@ export default function CardMakerScreen() {
   const hwStr = [
     (heightStart || heightEnd) ? `키 ${heightStart || '?'}cm${heightEnd ? ' → ' + heightEnd + 'cm' : ''}` : null,
     (weightStart || weightEnd) ? `몸무게 ${weightStart || '?'}kg${weightEnd ? ' → ' + weightEnd + 'kg' : ''}` : null,
-  ].filter(Boolean).join('\n');
+  ].filter(Boolean).join('\n') || '키 49cm → 54cm\n몸무게 3.0kg → 4.0kg';
 
   const dateStr = dateStart && dateEnd
     ? `${dateStart.replace(/-/g, '.')} ~ ${dateEnd.replace(/-/g, '.')}`
@@ -448,8 +451,6 @@ export default function CardMakerScreen() {
             )}
 
             {ageInfo && (() => {
-              const displayMonth = ageInfo.corrected ? ageInfo.corrected.months : ageInfo.months;
-              const ms = MILESTONES[Math.min(12, displayMonth)] || MILESTONES[12];
               return (
                 <>
                   <View style={styles.ageBadgeRow}>
@@ -475,13 +476,6 @@ export default function CardMakerScreen() {
                       </Text>
                     </View>
                   )}
-
-                  <View style={styles.milestoneBox}>
-                    <Text style={styles.milestoneTitle}>{ms.emoji} {ms.stage} 발달 정보</Text>
-                    {ms.items.map((item, i) => (
-                      <Text key={i} style={styles.milestoneItem}>{item}</Text>
-                    ))}
-                  </View>
                 </>
               );
             })()}
@@ -742,14 +736,14 @@ export default function CardMakerScreen() {
               month={month}
               dateStr={dateStr}
               hwStr={hwStr}
-              clothes={clothes}
-              vaccine={vaccine}
-              sleep={sleep}
-              feeding={feeding}
-              diaper={diaper}
-              dislikes={dislikes}
-              likes={likes}
-              special={special}
+              clothes={clothes || '배냇저고리 / 60'}
+              vaccine={vaccine || 'B형 간염 1차 (01/26)'}
+              sleep={sleep || '평균 15시간\n3시간에 한 번 깨서 맘마타임'}
+              feeding={feeding || '압타밀 1단계\n유축수유 60~100ml × 8회'}
+              diaper={diaper || '하기스 네이처메이드 1단계'}
+              dislikes={dislikes || '아기침대에서 자기\n목욕하기'}
+              likes={likes || '타이니 모빌\n트립트랩 뉴본'}
+              special={special || '양쪽 팔, 왼쪽 발 몽고반점\n황달 겪음\n취미: 딸꾹질하기 토하기'}
               photoUri={photoUri}
               photoSize={photoSize}
             />
