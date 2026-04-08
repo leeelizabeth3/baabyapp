@@ -12,7 +12,7 @@ import AlbumScreen from './src/screens/AlbumScreen';
 import GrowthScreen from './src/screens/GrowthScreen';
 import PremiumScreen from './src/screens/PremiumScreen';
 import CelebrationScreen from './src/screens/CelebrationScreen';
-import FirstYearCollageScreen from './src/screens/FirstYearCollageScreen';
+import JournalScreen from './src/screens/JournalScreen';
 
 import { useFonts } from 'expo-font';
 import { GamjaFlower_400Regular } from '@expo-google-fonts/gamja-flower';
@@ -107,11 +107,11 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="FirstYearCollage"
-            component={FirstYearCollageScreen}
+            name="Journal"
+            component={JournalScreen}
             options={{
-              tabBarLabel: '콜라주',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>🎞</Text>,
+              tabBarLabel: '육아일지',
+              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📓</Text>,
             }}
           />
           <Tab.Screen

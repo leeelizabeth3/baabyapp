@@ -15,6 +15,7 @@ import {
   FormField, StyledInput, COLORS,
 } from '../components/UI';
 import { getBabyProfile } from '../utils/storage';
+import FirstYearCollageScreen from './FirstYearCollageScreen';
 
 const { width: SW } = Dimensions.get('window');
 // 파일 상단에 폰트 상수 추가
@@ -312,6 +313,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
 // ── 메인 스크린 ────────────────────────────────
 export default function CelebrationScreen() {
   const insets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState('celebration'); // 'celebration' | 'collage'
   const [babyName, setBabyName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [inviteType, setInviteType] = useState('100'); // '100' | 'dol'
@@ -389,7 +391,27 @@ export default function CelebrationScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="🎊 기념일" subtitle="카운트다운 · 초대장 만들기" />
+      <AppHeader title="🎊 기념일" subtitle="카운트다운 · 초대장 · 콜라주" />
+
+      {/* 탭 스위처 */}
+      <View style={styles.tabRow}>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'celebration' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('celebration')}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'celebration' && styles.tabBtnTextActive]}>🎊 기념일</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'collage' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('collage')}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'collage' && styles.tabBtnTextActive]}>🎞 콜라주</Text>
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === 'collage' ? (
+        <FirstYearCollageScreen embedded />
+      ) : (
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── 카운트다운 ── */}
@@ -607,6 +629,7 @@ export default function CelebrationScreen() {
 
         <View style={{ height: 30 }} />
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -656,6 +679,17 @@ const inviteStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5EDD8' },
   scroll: { padding: 16, paddingBottom: 40 },
+  tabRow: {
+    flexDirection: 'row', backgroundColor: '#F0E4C8',
+    borderBottomWidth: 1.5, borderBottomColor: '#E0D0A0',
+  },
+  tabBtn: {
+    flex: 1, paddingVertical: 10, alignItems: 'center',
+    borderBottomWidth: 2.5, borderBottomColor: 'transparent',
+  },
+  tabBtnActive: { borderBottomColor: '#C87820', backgroundColor: '#FFF8E0' },
+  tabBtnText: { fontSize: 14, fontWeight: '600', color: '#A08050' },
+  tabBtnTextActive: { color: '#C87820', fontWeight: '800' },
   sec: { marginBottom: 4 },
   noBirthText: {
     fontSize: 13, color: '#8A7050', textAlign: 'center',

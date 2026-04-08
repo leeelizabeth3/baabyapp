@@ -62,8 +62,9 @@ const STICKER_CATEGORIES = [
     { source: require('../../assets/stickers/sun.png'), size: 100 },
     { source: require('../../assets/stickers/dolphin.png'), size: 100 },
     { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
-     { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
      { source: require('../../assets/stickers/babybottle.png'), size: 100 },
+     { source: require('../../assets/stickers/pacifier.png'), size: 100 },
+     { source: require('../../assets/stickers/stroller.png'), size: 100 },
   ]},
   { 
   key: 'baby',   
@@ -253,7 +254,7 @@ function PatternSwatch({ patternKey, label, active, onPress }) {  const previewC
 }
 
 // ── 드래그 가능한 스티커 ──────────────────────────
-function StickerItem({ sticker, onTransformChange }) {
+function StickerItem({ sticker, onTransformChange, onGestureActive }) {
   const pan = useRef(new Animated.ValueXY({ x: sticker.x, y: sticker.y })).current;
   const scaleAnim = useRef(new Animated.Value(sticker.scale || 1)).current;
   const rotationAnim = useRef(new Animated.Value(sticker.rotation || 0)).current;
@@ -277,6 +278,7 @@ function StickerItem({ sticker, onTransformChange }) {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderGrant: () => {
+        onGestureActive?.(false);
         pan.setOffset({ x: pan.x._value, y: pan.y._value });
         pan.setValue({ x: 0, y: 0 });
         isMultiTouch.current = false;
@@ -303,6 +305,7 @@ function StickerItem({ sticker, onTransformChange }) {
         }
       },
       onPanResponderRelease: () => {
+        onGestureActive?.(true);
         if (isMultiTouch.current) {
           lastScale.current = scaleAnim._value;
           lastRotation.current = rotationAnim._value;
@@ -315,6 +318,7 @@ function StickerItem({ sticker, onTransformChange }) {
         onTransformChange(sticker.id, pan.x._value, pan.y._value, lastScale.current, lastRotation.current);
       },
       onPanResponderTerminate: () => {
+        onGestureActive?.(true);
         pan.flattenOffset();
         lastScale.current = scaleAnim._value;
         lastRotation.current = rotationAnim._value;
@@ -391,6 +395,7 @@ export default function CardMakerScreen({ route }) {
   const [photoSize, setPhotoSize] = useState('medium');
   const [placedStickers, setPlacedStickers] = useState([]);
   const [stickerCategory, setStickerCategory] = useState('pastel');
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const [cardLayout, setCardLayout] = useState('boxed');
 
   useFocusEffect(useCallback(() => {
@@ -555,7 +560,7 @@ export default function CardMakerScreen({ route }) {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <AppHeader subtitle="카드 만들기 · 앨범 · 성장 추적" />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} scrollEnabled={scrollEnabled}>
 
         {/* ── 아기 나이 계산기 ── */}
         <View style={styles.sec}>
@@ -996,6 +1001,7 @@ export default function CardMakerScreen({ route }) {
               photoSize={photoSize}
               stickers={placedStickers}
               onStickerMove={updateStickerTransform}
+              onStickerGestureActive={setScrollEnabled}
               cardLayout={cardLayout}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
@@ -1054,7 +1060,7 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize, stickers, onStickerMove, cardLayout },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize, stickers, onStickerMove, onStickerGestureActive, cardLayout },
   ref
 ) {
   const titleFf = fontOverride != null ? fontOverride
@@ -1171,7 +1177,7 @@ const BabyCard = React.forwardRef(function BabyCard(
 
       {/* 스티커 레이어 */}
       {stickers?.map(s => (
-        <StickerItem key={s.id} sticker={s} onTransformChange={onStickerMove} />
+        <StickerItem key={s.id} sticker={s} onTransformChange={onStickerMove} onGestureActive={onStickerGestureActive} />
       ))}
     </View>
   );

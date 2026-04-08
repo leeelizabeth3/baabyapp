@@ -8,6 +8,7 @@ const KEYS = {
   MILESTONE_CHECKS: 'milestoneChecks_v1',
   FIRST_YEAR_PHOTOS: 'firstYearPhotos_v1',
   FIRST_YEAR_PROFILE: 'firstYearProfile_v1',
+  JOURNAL: 'babyJournal_v1',
 };
 
 // ── Baby Profile ──────────────────────────────
@@ -128,4 +129,43 @@ export async function saveFirstYearProfile(profile) {
   try {
     await AsyncStorage.setItem(KEYS.FIRST_YEAR_PROFILE, JSON.stringify(profile));
   } catch (e) { console.error(e); }
+}
+
+// ── Journal ────────────────────────────────────
+// entries: [{ id, date, title, text, mood }, ...]  sorted newest first
+export async function getJournalEntries() {
+  try {
+    const json = await AsyncStorage.getItem(KEYS.JOURNAL);
+    return json ? JSON.parse(json) : [];
+  } catch { return []; }
+}
+
+export async function saveJournalEntry(entry) {
+  try {
+    const entries = await getJournalEntries();
+    entries.unshift(entry);
+    entries.sort((a, b) => b.date.localeCompare(a.date));
+    await AsyncStorage.setItem(KEYS.JOURNAL, JSON.stringify(entries));
+    return entries;
+  } catch (e) { console.error(e); return []; }
+}
+
+export async function updateJournalEntry(updated) {
+  try {
+    const entries = await getJournalEntries();
+    const idx = entries.findIndex(e => e.id === updated.id);
+    if (idx >= 0) entries[idx] = updated;
+    entries.sort((a, b) => b.date.localeCompare(a.date));
+    await AsyncStorage.setItem(KEYS.JOURNAL, JSON.stringify(entries));
+    return entries;
+  } catch (e) { console.error(e); return []; }
+}
+
+export async function deleteJournalEntry(id) {
+  try {
+    const entries = await getJournalEntries();
+    const updated = entries.filter(e => e.id !== id);
+    await AsyncStorage.setItem(KEYS.JOURNAL, JSON.stringify(updated));
+    return updated;
+  } catch (e) { console.error(e); return []; }
 }

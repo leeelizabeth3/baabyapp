@@ -54,7 +54,7 @@ function MonthSlot({ month, uri, cell, photo, onPress }) {
   );
 }
 
-export default function FirstYearCollageScreen() {
+export default function FirstYearCollageScreen({ embedded = false }) {
   const insets = useSafeAreaInsets();
   const collageRef = useRef(null);
 
@@ -147,8 +147,8 @@ export default function FirstYearCollageScreen() {
   const CENTER_PHOTO = Math.floor(CELL * 1.5);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="🎞 첫 돌 콜라주" subtitle="12개월 성장 사진을 한눈에" />
+    <View style={[styles.container, !embedded && { paddingTop: insets.top }]}>
+      {!embedded && <AppHeader title="🎞 첫 돌 콜라주" subtitle="12개월 성장 사진을 한눈에" />}
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Collage Card (captured) ── */}
