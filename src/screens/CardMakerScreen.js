@@ -63,6 +63,7 @@ const STICKER_CATEGORIES = [
     { source: require('../../assets/stickers/dolphin.png'), size: 100 },
     { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
      { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
+     { source: require('../../assets/stickers/babybottle.png'), size: 100 },
   ]},
   { 
   key: 'baby',   
@@ -252,8 +253,25 @@ function PatternSwatch({ patternKey, label, active, onPress }) {  const previewC
 }
 
 // ── 드래그 가능한 스티커 ──────────────────────────
-function StickerItem({ sticker, onMove }) {
+function StickerItem({ sticker, onTransformChange }) {
   const pan = useRef(new Animated.ValueXY({ x: sticker.x, y: sticker.y })).current;
+  const scaleAnim = useRef(new Animated.Value(sticker.scale || 1)).current;
+  const rotationAnim = useRef(new Animated.Value(sticker.rotation || 0)).current;
+
+  const lastScale = useRef(sticker.scale || 1);
+  const lastRotation = useRef(sticker.rotation || 0);
+  const initialDistance = useRef(null);
+  const initialAngle = useRef(null);
+  const isMultiTouch = useRef(false);
+
+  const getDistance = (touches) => {
+    const dx = touches[1].pageX - touches[0].pageX;
+    const dy = touches[1].pageY - touches[0].pageY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+  const getAngle = (touches) =>
+    Math.atan2(touches[1].pageY - touches[0].pageY, touches[1].pageX - touches[0].pageX) * 180 / Math.PI;
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -261,22 +279,63 @@ function StickerItem({ sticker, onMove }) {
       onPanResponderGrant: () => {
         pan.setOffset({ x: pan.x._value, y: pan.y._value });
         pan.setValue({ x: 0, y: 0 });
+        isMultiTouch.current = false;
+        initialDistance.current = null;
+        initialAngle.current = null;
       },
-      onPanResponderMove: Animated.event(
-        [null, { dx: pan.x, dy: pan.y }],
-        { useNativeDriver: false }
-      ),
+      onPanResponderMove: (evt, gestureState) => {
+        const touches = evt.nativeEvent.touches;
+        if (touches.length >= 2) {
+          if (!isMultiTouch.current) {
+            isMultiTouch.current = true;
+            initialDistance.current = getDistance(touches);
+            initialAngle.current = getAngle(touches);
+          } else {
+            const dist = getDistance(touches);
+            const newScale = Math.max(0.3, Math.min(4, lastScale.current * (dist / initialDistance.current)));
+            scaleAnim.setValue(newScale);
+            const deltaAngle = getAngle(touches) - initialAngle.current;
+            rotationAnim.setValue(lastRotation.current + deltaAngle);
+          }
+        } else if (!isMultiTouch.current) {
+          pan.x.setValue(gestureState.dx);
+          pan.y.setValue(gestureState.dy);
+        }
+      },
       onPanResponderRelease: () => {
-        pan.flattenOffset();
-        onMove(sticker.id, pan.x._value, pan.y._value);
+        if (isMultiTouch.current) {
+          lastScale.current = scaleAnim._value;
+          lastRotation.current = rotationAnim._value;
+          initialDistance.current = null;
+          initialAngle.current = null;
+          isMultiTouch.current = false;
+        } else {
+          pan.flattenOffset();
+        }
+        onTransformChange(sticker.id, pan.x._value, pan.y._value, lastScale.current, lastRotation.current);
       },
-      onPanResponderTerminate: () => { pan.flattenOffset(); },
+      onPanResponderTerminate: () => {
+        pan.flattenOffset();
+        lastScale.current = scaleAnim._value;
+        lastRotation.current = rotationAnim._value;
+      },
     })
   ).current;
 
+  const rotateStr = rotationAnim.interpolate({
+    inputRange: [-720, 720],
+    outputRange: ['-720deg', '720deg'],
+  });
+
   return (
     <Animated.View
-      style={[stickerStyles.item, { transform: pan.getTranslateTransform() }]}
+      style={[stickerStyles.item, {
+        transform: [
+          ...pan.getTranslateTransform(),
+          { scale: scaleAnim },
+          { rotate: rotateStr },
+        ]
+      }]}
       {...panResponder.panHandlers}
     >
       {sticker.source
@@ -412,7 +471,7 @@ export default function CardMakerScreen({ route }) {
       const n = prev.length;
       const x = 16 + (n % 7) * 16;
       const y = 16 + Math.floor(n / 7) * 18;
-      return [...prev, { id: Date.now() + n, x, y, ...stickerData }];
+      return [...prev, { id: Date.now() + n, x, y, scale: 1, rotation: 0, ...stickerData }];
     });
   }, []);
 
@@ -420,8 +479,8 @@ export default function CardMakerScreen({ route }) {
     setPlacedStickers(prev => prev.filter(s => s.id !== id));
   }, []);
 
-  const updateStickerPos = useCallback((id, x, y) => {
-    setPlacedStickers(prev => prev.map(s => s.id === id ? { ...s, x, y } : s));
+  const updateStickerTransform = useCallback((id, x, y, scale, rotation) => {
+    setPlacedStickers(prev => prev.map(s => s.id === id ? { ...s, x, y, scale, rotation } : s));
   }, []);
 
   const saveCard = async () => {
@@ -904,7 +963,7 @@ export default function CardMakerScreen({ route }) {
                     </TouchableOpacity>
                   ))}
                 </View>
-                <Text style={styles.stickerHint}>💡 카드 미리보기에서 드래그해서 위치를 바꿀 수 있어요</Text>
+                <Text style={styles.stickerHint}>💡 드래그: 위치 이동 · 두 손가락 핀치: 크기 조절 · 두 손가락 회전: 방향 변경</Text>
               </View>
             )}
           </Card>
@@ -936,7 +995,7 @@ export default function CardMakerScreen({ route }) {
               photoUri={photoUri}
               photoSize={photoSize}
               stickers={placedStickers}
-              onStickerMove={updateStickerPos}
+              onStickerMove={updateStickerTransform}
               cardLayout={cardLayout}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
@@ -1112,7 +1171,7 @@ const BabyCard = React.forwardRef(function BabyCard(
 
       {/* 스티커 레이어 */}
       {stickers?.map(s => (
-        <StickerItem key={s.id} sticker={s} onMove={onStickerMove} />
+        <StickerItem key={s.id} sticker={s} onTransformChange={onStickerMove} />
       ))}
     </View>
   );
