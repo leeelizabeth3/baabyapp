@@ -391,7 +391,7 @@ export default function CelebrationScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="🎊 기념일" subtitle="카운트다운 · 초대장 · 콜라주" />
+      <AppHeader title="기념일" subtitle="카운트다운 · 초대장 · 콜라주" />
 
       {/* 탭 스위처 */}
       <View style={styles.tabRow}>

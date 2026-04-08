@@ -52,6 +52,7 @@ const PHOTO_SIZE_OPTIONS = [
   { key: 'large',  label: '크게', size: 170, premium: true },
 ];
 
+
 const STICKER_CATEGORIES = [
   { key: 'pastel', label: '🎨 파스텔', items: [
     { source: require('../../assets/stickers/Cutechickwithbabybottle.png'), size: 95 },
@@ -392,6 +393,7 @@ export default function CardMakerScreen({ route }) {
   const [userIsPremium, setUserIsPremium] = useState(false);
   const [selectedFont, setSelectedFont] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState('none');
+  const [showCornerDeco, setShowCornerDeco] = useState(true);
   const [photoSize, setPhotoSize] = useState('medium');
   const [placedStickers, setPlacedStickers] = useState([]);
   const [stickerCategory, setStickerCategory] = useState('pastel');
@@ -551,7 +553,7 @@ export default function CardMakerScreen({ route }) {
   const hwStr = [
     (heightStart || heightEnd) ? `키 ${heightStart || '?'}cm${heightEnd ? ' → ' + heightEnd + 'cm' : ''}` : null,
     (weightStart || weightEnd) ? `몸무게 ${weightStart || '?'}kg${weightEnd ? ' → ' + weightEnd + 'kg' : ''}` : null,
-  ].filter(Boolean).join('\n') || '키 49cm → 54cm\n몸무게 3.0kg → 4.0kg';
+  ].filter(Boolean).join('\n');
 
   const dateStr = dateStart && dateEnd
     ? `${dateStart.replace(/-/g, '.')} ~ ${dateEnd.replace(/-/g, '.')}`
@@ -576,7 +578,7 @@ export default function CardMakerScreen({ route }) {
                     const profile = await getBabyProfile();
                     await saveBabyProfile({ ...profile, name: text });
                   }}
-                  placeholder="예: 제니"
+                  placeholder=""
                   style={{ flex: 1 }}
                 />
               </View>
@@ -622,7 +624,7 @@ export default function CardMakerScreen({ route }) {
                 <StyledInput
                   value={prematureWeeks}
                   onChangeText={setPrematureWeeks}
-                  placeholder="예: 6  (6주 조산)"
+                  placeholder=""
                   keyboardType="number-pad"
                 />
               </FormField>
@@ -725,18 +727,18 @@ export default function CardMakerScreen({ route }) {
           <Card>
             <RowFields>
               <FormField label="시작 키(cm)" style={{ flex: 1 }}>
-                <StyledInput value={heightStart} onChangeText={setHeightStart} placeholder="49" keyboardType="decimal-pad" />
+                <StyledInput value={heightStart} onChangeText={setHeightStart} placeholder="예) 49" keyboardType="decimal-pad" />
               </FormField>
               <FormField label="끝 키(cm)" style={{ flex: 1 }}>
-                <StyledInput value={heightEnd} onChangeText={setHeightEnd} placeholder="54" keyboardType="decimal-pad" />
+                <StyledInput value={heightEnd} onChangeText={setHeightEnd} placeholder="예) 54" keyboardType="decimal-pad" />
               </FormField>
             </RowFields>
             <RowFields>
               <FormField label="시작 몸무게(kg)" style={{ flex: 1 }}>
-                <StyledInput value={weightStart} onChangeText={setWeightStart} placeholder="3.0" keyboardType="decimal-pad" />
+                <StyledInput value={weightStart} onChangeText={setWeightStart} placeholder="예) 3.2" keyboardType="decimal-pad" />
               </FormField>
               <FormField label="끝 몸무게(kg)" style={{ flex: 1 }}>
-                <StyledInput value={weightEnd} onChangeText={setWeightEnd} placeholder="4.0" keyboardType="decimal-pad" />
+                <StyledInput value={weightEnd} onChangeText={setWeightEnd} placeholder="예) 4.5" keyboardType="decimal-pad" />
               </FormField>
             </RowFields>
           </Card>
@@ -747,28 +749,28 @@ export default function CardMakerScreen({ route }) {
           <SectionTitle>📝 내용</SectionTitle>
           <Card>
             <FormField label="👗 옷사이즈">
-              <StyledInput value={clothes} onChangeText={setClothes} placeholder="배냇저고리 / 60" />
+              <StyledInput value={clothes} onChangeText={setClothes} placeholder="예) 배냇저고리 · 50사이즈" />
             </FormField>
             <FormField label="😴 수면">
-              <StyledInput value={sleep} onChangeText={setSleep} placeholder={"평균 15시간\n3시간에 한 번 깨서 맘마타임"} multiline numberOfLines={2} />
+              <StyledInput value={sleep} onChangeText={setSleep} placeholder="예) 하루 15시간, 밤중 3회 수유" multiline numberOfLines={2} />
             </FormField>
             <FormField label="🍼 맘마">
-              <StyledInput value={feeding} onChangeText={setFeeding} placeholder={"압타밀 1단계\n유축수유 60~100ml × 8회"} multiline numberOfLines={2} />
+              <StyledInput value={feeding} onChangeText={setFeeding} placeholder="예) 분유 80ml × 8회 / 모유수유" multiline numberOfLines={2} />
             </FormField>
             <FormField label="🧷 기저귀">
-              <StyledInput value={diaper} onChangeText={setDiaper} placeholder="하기스 네이처메이드 1단계" />
+              <StyledInput value={diaper} onChangeText={setDiaper} placeholder="예) 하기스 1단계" />
             </FormField>
             <FormField label="💉 접종내역">
-              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="B형 간염 1차 (01/26)" />
+              <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="예) B형 간염 1차" />
             </FormField>
             <FormField label="❤️ 좋아해요">
-              <StyledInput value={likes} onChangeText={setLikes} placeholder={"타이니 모빌\n트립트랩 뉴본"} multiline />
+              <StyledInput value={likes} onChangeText={setLikes} placeholder="예) 모빌 보기, 목욕" multiline />
             </FormField>
             <FormField label="😤 싫어해요">
-              <StyledInput value={dislikes} onChangeText={setDislikes} placeholder={"아기침대에서 자기\n목욕하기"} multiline />
+              <StyledInput value={dislikes} onChangeText={setDislikes} placeholder="예) 배 가스참, 기저귀 갈기" multiline />
             </FormField>
             <FormField label="✨ 특이사항">
-              <StyledInput value={special} onChangeText={setSpecial} placeholder={"양쪽 팔, 왼쪽 발 몽고반점\n황달 겪음\n취미: 딸꾹질하기 토하기"} multiline />
+              <StyledInput value={special} onChangeText={setSpecial} placeholder="예) 몽고반점, 황달 겪음" multiline />
             </FormField>
           </Card>
         </View>
@@ -857,13 +859,27 @@ export default function CardMakerScreen({ route }) {
             <View style={styles.fontPickerSection}>
               <Text style={styles.fontPickerLabel}>🌀 배경 패턴</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {/* 코너데코없음 */}
+                <TouchableOpacity
+                  onPress={() => setShowCornerDeco(false)}
+                  style={[styles.fontChip, !showCornerDeco && styles.fontChipActive]}
+                >
+                  <View style={{ width: 52, height: 34, borderRadius: 6, backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 18, opacity: 0.4 }}>🚫</Text>
+                  </View>
+                  <Text style={[styles.fontChipLabel, !showCornerDeco && styles.fontChipLabelActive]}>코너없음</Text>
+                </TouchableOpacity>
                 {PATTERN_OPTIONS.map(opt => {
                   const locked = opt.key !== 'none' && !userIsPremium;
                   return (
                     <TouchableOpacity
                       key={opt.key}
-                      onPress={() => locked ? setShowPremium(true) : setSelectedPattern(opt.key)}
-                      style={[styles.fontChip, selectedPattern === opt.key && styles.fontChipActive]}
+                      onPress={() => {
+                        if (locked) { setShowPremium(true); return; }
+                        setSelectedPattern(opt.key);
+                        setShowCornerDeco(true);
+                      }}
+                      style={[styles.fontChip, showCornerDeco && selectedPattern === opt.key && styles.fontChipActive]}
                     >
                       <View style={{ width: 52, height: 34, borderRadius: 6, overflow: 'hidden', backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
                         {opt.key !== 'none' ? (
@@ -878,7 +894,7 @@ export default function CardMakerScreen({ route }) {
                           </View>
                         )}
                       </View>
-                      <Text style={[styles.fontChipLabel, selectedPattern === opt.key && styles.fontChipLabelActive]}>{opt.label}</Text>
+                      <Text style={[styles.fontChipLabel, showCornerDeco && selectedPattern === opt.key && styles.fontChipLabelActive]}>{opt.label}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -989,20 +1005,21 @@ export default function CardMakerScreen({ route }) {
               month={month}
               dateStr={dateStr}
               hwStr={hwStr}
-              clothes={clothes || '배냇저고리 / 60'}
-              vaccine={vaccine || 'B형 간염 1차 (01/26)'}
-              sleep={sleep || '평균 15시간\n3시간에 한 번 깨서 맘마타임'}
-              feeding={feeding || '압타밀 1단계\n유축수유 60~100ml × 8회'}
-              diaper={diaper || '하기스 네이처메이드 1단계'}
-              dislikes={dislikes || '아기침대에서 자기\n목욕하기'}
-              likes={likes || '타이니 모빌\n트립트랩 뉴본'}
-              special={special || '양쪽 팔, 왼쪽 발 몽고반점\n황달 겪음\n취미: 딸꾹질하기 토하기'}
+              clothes={clothes}
+              vaccine={vaccine}
+              sleep={sleep}
+              feeding={feeding}
+              diaper={diaper}
+              dislikes={dislikes}
+              likes={likes}
+              special={special}
               photoUri={photoUri}
               photoSize={photoSize}
               stickers={placedStickers}
               onStickerMove={updateStickerTransform}
               onStickerGestureActive={setScrollEnabled}
               cardLayout={cardLayout}
+              cornerDeco={showCornerDeco ? t.swatchIcon : null}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
               {saving ? '저장 중...' : '💾 사진첩 & 앨범에 저장하기'}
@@ -1060,7 +1077,7 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize, stickers, onStickerMove, onStickerGestureActive, cardLayout },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize, stickers, onStickerMove, onStickerGestureActive, cardLayout, cornerDeco },
   ref
 ) {
   const titleFf = fontOverride != null ? fontOverride
@@ -1109,7 +1126,17 @@ const BabyCard = React.forwardRef(function BabyCard(
   return (
     <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW }]}>
       <CardPattern pattern={effectivePattern} width={SW} />
+      {/* Top accent strip */}
+      <View style={[cardStyles.topAccent, { backgroundColor: t.pillBorder || t.tagBg || '#E8C040' }]} />
       {/* Corner decos */}
+      {cornerDeco && (
+        <>
+          <Text style={[cardStyles.deco, { top: 8, left: 8 }]}>{cornerDeco}</Text>
+          <Text style={[cardStyles.deco, { top: 8, right: 8 }]}>{cornerDeco}</Text>
+          <Text style={[cardStyles.deco, { bottom: 8, left: 8 }]}>{cornerDeco}</Text>
+          <Text style={[cardStyles.deco, { bottom: 8, right: 8 }]}>{cornerDeco}</Text>
+        </>
+      )}
       {/* Title */}
       <Text style={[cardStyles.title, {
         color: t.titleColor,
@@ -1118,6 +1145,7 @@ const BabyCard = React.forwardRef(function BabyCard(
       }]}>
         {name} {month}개월 성장보고서
       </Text>
+      <View style={[cardStyles.titleDivider, { backgroundColor: t.pillBorder || t.tagBg || '#E8C040' }]} />
       {/* Date pill */}
       {dateStr ? (
         <View style={[cardStyles.datePill, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
@@ -1185,113 +1213,133 @@ const BabyCard = React.forwardRef(function BabyCard(
 
 const cardStyles = StyleSheet.create({
   card: {
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: 24,
+    padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 10,
     position: 'relative',
     overflow: 'hidden',
   },
-  deco: { position: 'absolute', fontSize: 30, zIndex: 1 },
-  title: { fontSize: 23, textAlign: 'center', marginBottom: 6, marginTop: 4 },
-  datePill: {
-    alignSelf: 'center', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
-    borderWidth: 1.5, marginBottom: 10,
+  topAccent: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: 5,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    opacity: 0.8,
+    zIndex: 2,
   },
-  datePillText: { fontSize: 12, fontWeight: '500' },
-  row: { flexDirection: 'row', marginBottom: 6 },
+  deco: { position: 'absolute', fontSize: 28, zIndex: 3 },
+  title: { fontSize: 22, textAlign: 'center', marginBottom: 6, marginTop: 10 },
+  titleDivider: {
+    height: 2, borderRadius: 1, width: 70,
+    alignSelf: 'center', marginBottom: 10, opacity: 0.45,
+  },
+  datePill: {
+    alignSelf: 'center', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 5,
+    borderWidth: 1.5, marginBottom: 12,
+  },
+  datePillText: { fontSize: 12, fontWeight: '600' },
+  row: { flexDirection: 'row', marginBottom: 7 },
   infoBlock: {
-    borderRadius: 10, padding: 8, borderWidth: 1.5, flex: 1,
+    borderRadius: 12, padding: 9, borderWidth: 1, flex: 1,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
   infoTag: {
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'center', marginBottom: 4,
+    paddingHorizontal: 9, paddingVertical: 3, borderRadius: 8, alignSelf: 'center', marginBottom: 5,
   },
   infoTagText: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
   infoBody: { fontSize: 11, color: '#4A3520', lineHeight: 17, textAlign: 'center' },
   photoCircle: {
-    width: 120, height: 120, borderRadius: 60, borderWidth: 3,
+    width: 120, height: 120, borderRadius: 60, borderWidth: 4,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     flexShrink: 0,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 5,
   },
   photoImg: { width: '100%', height: '100%' },
-  footer: { textAlign: 'center', fontSize: 11, marginTop: 8 },
+  footer: { textAlign: 'center', fontSize: 11, marginTop: 12, letterSpacing: 0.3 },
 });
 
 const styles = StyleSheet.create({
   inlineField: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
-    backgroundColor: '#FFFDF5', paddingHorizontal: 10, paddingVertical: 2,
-    marginBottom: 10,
+    borderWidth: 1.5, borderColor: '#E8D8B8', borderRadius: 12,
+    backgroundColor: '#FFFDF5', paddingHorizontal: 12, paddingVertical: 2,
+    marginBottom: 12,
   },
-  inlineLabel: { fontSize: 11, color: '#A08050', fontWeight: '600', marginRight: 6, flexShrink: 0 },
+  inlineLabel: { fontSize: 12, color: '#9A8060', fontWeight: '700', marginRight: 8, flexShrink: 0 },
   dateBtnInline: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 9,
   },
   dateBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
-    backgroundColor: '#FFFDF5', paddingHorizontal: 10, paddingVertical: 8,
+    borderWidth: 1.5, borderColor: '#E8D8B8', borderRadius: 12,
+    backgroundColor: '#FFFDF5', paddingHorizontal: 12, paddingVertical: 10,
   },
-  dateBtnText: { fontSize: 11, color: '#4A3520', fontWeight: '500' },
-  dateBtnPlaceholder: { fontSize: 11, color: '#B0A080' },
-  container: { flex: 1, backgroundColor: '#F5EDD8' },
-  scroll: { padding: 16, paddingBottom: 40 },
-  sec: { marginBottom: 4 },
+  dateBtnText: { fontSize: 13, color: '#4A3520', fontWeight: '600' },
+  dateBtnPlaceholder: { fontSize: 13, color: '#C0AE8A' },
+  container: { flex: 1, backgroundColor: '#F2E8D0' },
+  scroll: { padding: 20, paddingBottom: 50 },
+  sec: { marginBottom: 20 },
   chip: {
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1.5, borderColor: '#EAD9C0', backgroundColor: '#FFFDF5',
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1.5, borderColor: '#E8D8B8', backgroundColor: '#FFFDF5',
   },
-  chipActive: { backgroundColor: '#F5C842', borderColor: '#E8A020' },
-  chipText: { fontSize: 12, fontWeight: '500', color: '#8A7050' },
-  chipTextActive: { color: '#5A3A10', fontWeight: '700' },
+  chipActive: { backgroundColor: '#FFE040', borderColor: '#D89810' },
+  chipText: { fontSize: 12, fontWeight: '600', color: '#8A7050' },
+  chipTextActive: { color: '#4A3010', fontWeight: '700' },
   dropdownBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 4, paddingVertical: 8,
   },
-  dropdownBtnText: { fontSize: 14, fontWeight: '600', color: '#5A3A10' },
+  dropdownBtnText: { fontSize: 14, fontWeight: '600', color: '#4A3010' },
   dropdownArrow: { fontSize: 10, color: '#A09070', marginLeft: 6 },
   dropdownOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.35)',
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center', alignItems: 'center',
   },
   dropdownList: {
-    backgroundColor: '#FFFDF5', borderRadius: 16, padding: 12,
+    backgroundColor: '#FFFDF5', borderRadius: 20, padding: 14,
     width: 220, maxHeight: 320,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18, shadowRadius: 12, elevation: 8,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2, shadowRadius: 20, elevation: 12,
   },
   dropdownListTitle: {
-    fontSize: 13, fontWeight: '700', color: '#8A7050',
-    textAlign: 'center', marginBottom: 8, paddingBottom: 8,
+    fontSize: 13, fontWeight: '800', color: '#7A5020',
+    textAlign: 'center', marginBottom: 10, paddingBottom: 10,
     borderBottomWidth: 1, borderBottomColor: '#EAD9C0',
+    letterSpacing: 0.2,
   },
   dropdownItem: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8,
+    paddingVertical: 11, paddingHorizontal: 14, borderRadius: 10,
   },
   dropdownItemActive: { backgroundColor: '#FFF0C0' },
   dropdownItemText: { fontSize: 14, color: '#5A3A10' },
   dropdownItemTextActive: { fontWeight: '700', color: '#C87820' },
-  dropdownItemCheck: { fontSize: 13, color: '#C87820', fontWeight: '700' },
+  dropdownItemCheck: { fontSize: 14, color: '#C87820', fontWeight: '700' },
   photoArea: {
-    borderWidth: 2, borderColor: '#E8DCC8', borderStyle: 'dashed',
-    borderRadius: 12, padding: 20, alignItems: 'center', backgroundColor: '#FFFDF5',
+    borderWidth: 2, borderColor: '#DCC8A8', borderStyle: 'dashed',
+    borderRadius: 18, paddingVertical: 40, paddingHorizontal: 20,
+    alignItems: 'center', backgroundColor: '#FFFCF5',
   },
-  photoPreview: { width: '100%', height: 180, borderRadius: 10 },
-  photoIcon: { fontSize: 28, marginBottom: 6 },
-  photoText: { fontSize: 13, color: '#8A7050' },
-  photoSub: { fontSize: 11, color: '#A09070', marginTop: 2 },
+  photoPreview: { width: '100%', height: 200, borderRadius: 14 },
+  photoIcon: { fontSize: 40, marginBottom: 10 },
+  photoText: { fontSize: 15, color: '#7A6040', fontWeight: '700' },
+  photoSub: { fontSize: 12, color: '#B0A080', marginTop: 5 },
   themeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   themeSwatch: {
     width: '23%', borderRadius: 12, padding: 6, alignItems: 'center',
@@ -1304,38 +1352,38 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 4, right: 4, width: 16, height: 16,
     backgroundColor: '#5A3A10', borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
-  cardSection: { marginTop: 20, marginHorizontal: -16 },
-  cardHint: { fontSize: 12, color: '#8A7050', textAlign: 'center', marginBottom: 10 },
+  cardSection: { marginTop: 28, marginHorizontal: -20 },
+  cardHint: { fontSize: 13, color: '#8A7050', textAlign: 'center', marginBottom: 14, fontWeight: '600' },
   premToggle: {
-    flexDirection: 'row', alignItems: 'center', marginBottom: 10, marginTop: 2,
+    flexDirection: 'row', alignItems: 'center', marginBottom: 12, marginTop: 2,
   },
   checkbox: {
-    width: 18, height: 18, borderRadius: 5, borderWidth: 1.5, borderColor: '#C8B090',
-    backgroundColor: '#FFFDF5', alignItems: 'center', justifyContent: 'center', marginRight: 8,
+    width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: '#C8B090',
+    backgroundColor: '#FFFDF5', alignItems: 'center', justifyContent: 'center', marginRight: 9,
   },
   checkboxActive: { backgroundColor: '#C87820', borderColor: '#C87820' },
-  premToggleText: { fontSize: 13, color: '#6A5030', fontWeight: '500' },
+  premToggleText: { fontSize: 13, color: '#6A5030', fontWeight: '600' },
   ageBadgeRow: {
-    flexDirection: 'row', gap: 6, marginTop: 12, marginBottom: 8, justifyContent: 'center',
+    flexDirection: 'row', gap: 8, marginTop: 14, marginBottom: 10, justifyContent: 'center',
   },
   ageBadge: {
-    flex: 1, alignItems: 'center', backgroundColor: '#FFF8E8',
-    borderRadius: 10, paddingVertical: 7, borderWidth: 1.5, borderColor: '#EAD9C0',
+    flex: 1, alignItems: 'center', backgroundColor: '#FFFBF0',
+    borderRadius: 14, paddingVertical: 10, borderWidth: 1.5, borderColor: '#EAD9C0',
   },
-  ageBadgeMain: { backgroundColor: '#FFF0A0', borderColor: '#E8C020' },
-  ageBadgeNum: { fontSize: 16, fontWeight: '800', color: '#7A5020' },
-  ageBadgeNumMain: { fontSize: 18, color: '#B07010' },
-  ageBadgeLabel: { fontSize: 12, color: '#A08050', fontWeight: '600' },
-  ageBadgeLabelMain: { fontSize: 13, color: '#C87820', fontWeight: '700' },
+  ageBadgeMain: { backgroundColor: '#FFF3A0', borderColor: '#DDB800' },
+  ageBadgeNum: { fontSize: 22, fontWeight: '800', color: '#6A4010' },
+  ageBadgeNumMain: { fontSize: 24, color: '#B07010' },
+  ageBadgeLabel: { fontSize: 11, color: '#A08050', fontWeight: '600' },
+  ageBadgeLabelMain: { fontSize: 12, color: '#C87820', fontWeight: '700' },
   correctedBox: {
-    backgroundColor: '#EEF8FF', borderRadius: 10, padding: 12,
+    backgroundColor: '#EEF8FF', borderRadius: 14, padding: 14,
     borderWidth: 1.5, borderColor: '#B8D8F0', marginBottom: 10, alignItems: 'center',
   },
   correctedTitle: { fontSize: 11, fontWeight: '700', color: '#4A80B0', marginBottom: 2 },
-  correctedValue: { fontSize: 20, fontWeight: '800', color: '#2A60A0' },
+  correctedValue: { fontSize: 22, fontWeight: '800', color: '#2A60A0' },
   correctedSub: { fontSize: 10, color: '#7AAAD0', marginTop: 2 },
   milestoneBox: {
-    backgroundColor: '#FFFCF0', borderRadius: 12, padding: 12,
+    backgroundColor: '#FFFCF0', borderRadius: 14, padding: 14,
     borderWidth: 1.5, borderColor: '#F0E0A0', marginTop: 4,
   },
   milestoneTitle: {
@@ -1343,7 +1391,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#F0E0A0', paddingBottom: 6,
   },
   milestoneItem: {
-    fontSize: 12, color: '#5A4020', lineHeight: 20, paddingVertical: 1,
+    fontSize: 12, color: '#5A4020', lineHeight: 22, paddingVertical: 1,
   },
   themeSwatchLocked: { opacity: 0.6 },
   lockOverlay: {
@@ -1355,63 +1403,75 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fontPickerSection: {
-    marginTop: 16,
-    paddingTop: 14,
+    marginTop: 18,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#F0E0C0',
   },
   fontPickerLabel: {
     fontSize: 12,
-    color: '#A08050',
-    fontWeight: '600',
-    marginBottom: 8,
+    color: '#9A8060',
+    fontWeight: '700',
+    marginBottom: 10,
+    letterSpacing: 0.2,
   },
   fontChip: {
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E8D8B0',
     backgroundColor: '#FFF8EE',
-    minWidth: 76,
+    minWidth: 80,
   },
   fontChipActive: {
-    borderColor: '#C87820',
-    backgroundColor: '#FFF0D0',
+    borderColor: '#D89810',
+    backgroundColor: '#FFF0CC',
+    shadowColor: '#E8A020',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   fontChipSample: {
-    fontSize: 15,
-    marginBottom: 2,
+    fontSize: 16,
+    marginBottom: 3,
     color: '#333',
   },
   fontChipLabel: {
     fontSize: 10,
     color: '#A08050',
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   fontChipLabelActive: {
     color: '#C87820',
     fontWeight: '700',
   },
   stickerPickBtn: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 52, height: 52, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#FFF5E8',
   },
-  stickerPickEmoji: { fontSize: 32 },
-  stickerPlacedLabel: { fontSize: 11, color: '#8A7050', fontWeight: '600' },
+  stickerPickEmoji: { fontSize: 30 },
+  stickerPlacedLabel: { fontSize: 12, color: '#8A7050', fontWeight: '700' },
   stickerPlacedChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 3,
-    backgroundColor: '#FFF0C0', borderRadius: 10,
-    paddingHorizontal: 8, paddingVertical: 5,
-    borderWidth: 1, borderColor: '#E8A020',
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#FFF5CC', borderRadius: 12,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderWidth: 1.5, borderColor: '#E8A020',
   },
   stickerRemoveX: { fontSize: 10, color: '#C06030', fontWeight: '700' },
-  stickerHint: { fontSize: 11, color: '#A09070', marginTop: 8, lineHeight: 16 },
+  stickerHint: { fontSize: 11, color: '#B0A080', marginTop: 10, lineHeight: 17 },
   layoutChip: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12,
-    borderWidth: 1.5, borderColor: '#EAD9C0', backgroundColor: '#FFFDF5', gap: 2,
+    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14,
+    borderWidth: 1.5, borderColor: '#E8D8B8', backgroundColor: '#FFF8EE', gap: 4,
   },
-  layoutChipActive: { backgroundColor: '#FFF0C0', borderColor: '#E8A020' },
-  layoutChipDesc: { fontSize: 18, color: '#A09070' },
+  layoutChipActive: {
+    backgroundColor: '#FFF0CC', borderColor: '#D89810',
+    shadowColor: '#E8A020', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2, shadowRadius: 5, elevation: 2,
+  },
+  layoutChipDesc: { fontSize: 20, color: '#A09070' },
 });

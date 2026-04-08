@@ -25,7 +25,7 @@ export function AppHeader({ title = '아기 성장보고서', subtitle }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerRow}>
-        <SproutMascot size={44} expression="happy" />
+        <SproutMascot size={46} expression="happy" />
         <View style={styles.headerTextWrap}>
           <Text style={styles.headerTitle}>{title}</Text>
           {subtitle && <Text style={styles.headerSub}>{subtitle}</Text>}
@@ -42,6 +42,7 @@ export { default as SproutMascot } from './SproutMascot';
 export function SectionTitle({ children }) {
   return (
     <View style={styles.secTitleWrap}>
+      <View style={styles.secTitleBar} />
       <Text style={styles.secTitle}>{children}</Text>
     </View>
   );
@@ -58,7 +59,7 @@ export function PrimaryButton({ onPress, children, color = COLORS.yellowDark, te
     <TouchableOpacity
       style={[styles.primaryBtn, { backgroundColor: color }, style]}
       onPress={onPress}
-      activeOpacity={0.85}
+      activeOpacity={0.82}
     >
       {loading
         ? <ActivityIndicator color={textColor} />
@@ -91,8 +92,8 @@ export function FormField({ label, children, style }) {
 export function StyledInput({ multiline, numberOfLines, ...props }) {
   return (
     <TextInput
-      style={[styles.input, multiline && { minHeight: numberOfLines ? numberOfLines * 22 + 16 : 70, textAlignVertical: 'top' }]}
-      placeholderTextColor="#B0A080"
+      style={[styles.input, multiline && { minHeight: numberOfLines ? numberOfLines * 22 + 18 : 72, textAlignVertical: 'top' }]}
+      placeholderTextColor="#C0AE8A"
       multiline={multiline}
       numberOfLines={numberOfLines}
       editable={true}
@@ -153,84 +154,92 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#FFE070',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#C89018',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 5,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'center',
+    gap: 12,
   },
   headerTextWrap: {
-    flexShrink: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#5A3A10',
-    letterSpacing: -0.3,
+    color: '#4A3010',
+    letterSpacing: -0.4,
   },
-  headerSub: { fontSize: 12, color: '#8A6830', marginTop: 2 },
+  headerSub: { fontSize: 12, color: '#907030', marginTop: 2, fontWeight: '500' },
+
+  // SectionTitle — left accent bar style
   secTitleWrap: {
-    backgroundColor: '#F5C842',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 10,
   },
-  secTitle: { fontSize: 13, fontWeight: '700', color: '#7A4A10' },
+  secTitleBar: {
+    width: 4,
+    height: 20,
+    borderRadius: 2,
+    backgroundColor: '#E8A020',
+  },
+  secTitle: { fontSize: 14, fontWeight: '800', color: '#4A3010', letterSpacing: -0.2 },
+
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 14,
+    shadowColor: '#C8902A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    marginBottom: 0,
   },
   primaryBtn: {
-    borderRadius: 13,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#C87820',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.32,
+    shadowRadius: 10,
+    elevation: 5,
+    marginTop: 8,
+  },
+  primaryBtnText: { fontSize: 16, fontWeight: '800', letterSpacing: 0.1 },
+  secondaryBtn: {
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    shadowColor: '#000',
+    backgroundColor: '#65B862',
+    marginTop: 10,
+    shadowColor: '#2A7030',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
     elevation: 4,
-    marginTop: 6,
   },
-  primaryBtnText: { fontSize: 15, fontWeight: '700' },
-  secondaryBtn: {
-    borderRadius: 13,
-    paddingVertical: 13,
-    alignItems: 'center',
-    backgroundColor: '#7DC87A',
-    marginTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  secondaryBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
-  formField: { marginBottom: 10 },
-  fieldLabel: { fontSize: 11, color: '#8A7050', fontWeight: '600', marginBottom: 4 },
+  secondaryBtnText: { fontSize: 14, fontWeight: '700', color: '#fff', letterSpacing: 0.1 },
+  formField: { marginBottom: 12 },
+  fieldLabel: { fontSize: 12, color: '#9A8060', fontWeight: '700', marginBottom: 6, letterSpacing: 0.2 },
   input: {
     borderWidth: 1.5,
-    borderColor: '#EAD9C0',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 13,
+    borderColor: '#E8D8B8',
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    fontSize: 14,
     color: '#4A3520',
     backgroundColor: '#FFFDF5',
   },

@@ -81,7 +81,7 @@ export default function AlbumScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="📖 앨범" subtitle="매달 성장보고서 모음" />
+      <AppHeader title="앨범" subtitle="매달 성장보고서 모음" />
 
       {album.length === 0 ? (
         <EmptyState

@@ -111,7 +111,7 @@ export default function GrowthScreen({ navigation }) {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <AppHeader title="📈 성장 추적" subtitle="WHO 기준 백분위수 · 0~4세" />
+      <AppHeader title="성장 추적" subtitle="WHO 기준 백분위수 · 0~4세" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Baby profile */}

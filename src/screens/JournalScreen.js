@@ -212,7 +212,7 @@ export default function JournalScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <AppHeader title="📓 육아 일지" subtitle="소중한 순간을 기록해요" />
+      <AppHeader title="육아 일지" subtitle="소중한 순간을 기록해요" />
 
       {/* Entry list */}
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
