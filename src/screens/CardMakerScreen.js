@@ -4,7 +4,10 @@ import React, { useState, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
   StyleSheet, Alert, Dimensions, Platform, Modal, Share,
+  Animated, PanResponder,
 } from 'react-native';
+
+
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -47,6 +50,55 @@ const PATTERN_OPTIONS = [
 const PHOTO_SIZE_OPTIONS = [
   { key: 'medium', label: '보통', size: 130, premium: false },
   { key: 'large',  label: '크게', size: 170, premium: true },
+];
+
+const STICKER_CATEGORIES = [
+  { key: 'pastel', label: '🎨 파스텔', items: [
+    { source: require('../../assets/stickers/Cutechickwithbabybottle.png'), size: 95 },
+    { source: require('../../assets/stickers/unicorn.png'), size: 95 },
+    { source: require('../../assets/stickers/bathbear.png'), size: 95 },
+    { source: require('../../assets/stickers/sunflower.png'), size: 95 },
+    { source: require('../../assets/stickers/rainbow.png'), size: 100 },
+    { source: require('../../assets/stickers/sun.png'), size: 100 },
+    { source: require('../../assets/stickers/dolphin.png'), size: 100 },
+    { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
+     { source: require('../../assets/stickers/bunnyrattle.png'), size: 100 },
+  ]},
+  { 
+  key: 'baby',   
+  label: '👶 아기',  
+  items: [
+    '🍼','👶','🧸','🎀','🛁','🧷','💤','🤍',
+    '👣','🫶','🧼','🪥','🧦','🛏️','🧻','🍼','🥛','🍌'
+  ] 
+},
+
+{ 
+  key: 'nature', 
+  label: '🌸 자연',  
+  items: [
+    '🌸','🌻','🌈','☀️','⭐','🌟','🌿','🍀',
+    '🌼','🌷','🌺','🌙','☁️','🌊','🍃','🌞'
+  ] 
+},
+
+{ 
+  key: 'party',  
+  label: '🎉 축하',  
+  items: [
+    '🎊','🎉','🎈','🎁','🎂','✨','💕','💛',
+    '💖','💝','🪅','🥳','🍰','🕯️','🎀','💐'
+  ] 
+},
+
+{ 
+  key: 'animal', 
+  label: '🐣 동물',  
+  items: [
+    '🐣','🐥','🦋','🐰','🐻','🦊','🐸','🐤',
+    '🐶','🐱','🐼','🐯','🐹','🐨','🐧','🦄'
+  ] 
+}
 ];
 
 // ── 100일 알림 스케줄 ──────────────────────────
@@ -181,8 +233,7 @@ const MINI_PATTERNS = {
   stars:   (c) => <Pattern id="pp" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><Circle cx="4" cy="4" r="1" fill={c} /><Circle cx="14" cy="12" r="0.7" fill={c} /><Circle cx="9" cy="16" r="0.8" fill={c} /></Pattern>,
 };
 
-function PatternSwatch({ patternKey, label, active, onPress }) {
-  const previewColor = '#B0A0C8';
+function PatternSwatch({ patternKey, label, active, onPress }) {  const previewColor = '#B0A0C8';
   return (
     <TouchableOpacity onPress={onPress} style={[styles.fontChip, active && styles.fontChipActive]}>
       <View style={{ width: 52, height: 34, borderRadius: 6, overflow: 'hidden', backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
@@ -199,6 +250,49 @@ function PatternSwatch({ patternKey, label, active, onPress }) {
     </TouchableOpacity>
   );
 }
+
+// ── 드래그 가능한 스티커 ──────────────────────────
+function StickerItem({ sticker, onMove }) {
+  const pan = useRef(new Animated.ValueXY({ x: sticker.x, y: sticker.y })).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderGrant: () => {
+        pan.setOffset({ x: pan.x._value, y: pan.y._value });
+        pan.setValue({ x: 0, y: 0 });
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+        onMove(sticker.id, pan.x._value, pan.y._value);
+      },
+      onPanResponderTerminate: () => { pan.flattenOffset(); },
+    })
+  ).current;
+
+  return (
+    <Animated.View
+      style={[stickerStyles.item, { transform: pan.getTranslateTransform() }]}
+      {...panResponder.panHandlers}
+    >
+      {sticker.source
+        ? <Image source={sticker.source} style={{ width: sticker.size || 64, height: sticker.size || 64 }} resizeMode="contain" />
+        : <Text style={stickerStyles.emoji}>{sticker.emoji}</Text>
+      }
+    </Animated.View>
+  );
+}
+
+const stickerStyles = StyleSheet.create({
+  item: { position: 'absolute', zIndex: 20 },
+  emoji: { fontSize: 34 },
+});
+
+const IMAGE_STICKERS = []; // STICKER_CATEGORIES 파스텔 카테고리로 통합됨
 
 export default function CardMakerScreen({ route }) {
   const insets = useSafeAreaInsets();
@@ -236,6 +330,9 @@ export default function CardMakerScreen({ route }) {
   const [selectedFont, setSelectedFont] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState('none');
   const [photoSize, setPhotoSize] = useState('medium');
+  const [placedStickers, setPlacedStickers] = useState([]);
+  const [stickerCategory, setStickerCategory] = useState('pastel');
+  const [cardLayout, setCardLayout] = useState('boxed');
 
   useFocusEffect(useCallback(() => {
     isPremium().then(setUserIsPremium);
@@ -309,6 +406,23 @@ export default function CardMakerScreen({ route }) {
   const generateCard = () => {
     setCardVisible(true);
   };
+
+  const addSticker = useCallback((stickerData) => {
+    setPlacedStickers(prev => {
+      const n = prev.length;
+      const x = 16 + (n % 7) * 16;
+      const y = 16 + Math.floor(n / 7) * 18;
+      return [...prev, { id: Date.now() + n, x, y, ...stickerData }];
+    });
+  }, []);
+
+  const removeSticker = useCallback((id) => {
+    setPlacedStickers(prev => prev.filter(s => s.id !== id));
+  }, []);
+
+  const updateStickerPos = useCallback((id, x, y) => {
+    setPlacedStickers(prev => prev.map(s => s.id === id ? { ...s, x, y } : s));
+  }, []);
 
   const saveCard = async () => {
     if (!cardRef.current) return;
@@ -707,6 +821,26 @@ export default function CardMakerScreen({ route }) {
               </ScrollView>
             </View>
 
+            {/* 카드 레이아웃 */}
+            <View style={styles.fontPickerSection}>
+              <Text style={styles.fontPickerLabel}>📋 카드 레이아웃</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {[
+                  { key: 'boxed',   label: '박스형',   desc: '□' },
+                  { key: 'minimal', label: '박스없음',   desc: '—' },
+                ].map(opt => (
+                  <TouchableOpacity
+                    key={opt.key}
+                    style={[styles.layoutChip, cardLayout === opt.key && styles.layoutChipActive]}
+                    onPress={() => setCardLayout(opt.key)}
+                  >
+                    <Text style={[styles.layoutChipDesc, cardLayout === opt.key && { color: '#C87820' }]}>{opt.desc}</Text>
+                    <Text style={[styles.fontChipLabel, cardLayout === opt.key && styles.fontChipLabelActive]}>{opt.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             {/* 프리미엄 모달 */}
             <Modal visible={showPremium} animationType="slide">
               <PremiumScreen
@@ -720,8 +854,63 @@ export default function CardMakerScreen({ route }) {
           </Card>
         </View>
 
-        <PrimaryButton onPress={generateCard}>✨ 성장보고서 카드 만들기!</PrimaryButton>
+        {/* ── 스티커 ── */}
+        <View style={styles.sec}>
+          <SectionTitle>🎀 스티커</SectionTitle>
+          <Card>
+            {/* 카테고리 탭 */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
+              {STICKER_CATEGORIES.map(cat => (
+                <TouchableOpacity
+                  key={cat.key}
+                  style={[styles.chip, stickerCategory === cat.key && styles.chipActive]}
+                  onPress={() => setStickerCategory(cat.key)}
+                >
+                  <Text style={[styles.chipText, stickerCategory === cat.key && styles.chipTextActive]}>{cat.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
+            {/* 스티커 팔레트 (이미지 + 이모지 통합) */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4, paddingVertical: 4 }}>
+              {STICKER_CATEGORIES.find(c => c.key === stickerCategory)?.items.map((item, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.stickerPickBtn}
+                  onPress={() => typeof item === 'string' ? addSticker({ emoji: item }) : addSticker({ source: item.source, size: item.size })}
+                  activeOpacity={0.7}
+                >
+                  {typeof item === 'string'
+                    ? <Text style={styles.stickerPickEmoji}>{item}</Text>
+                    : <Image source={item.source} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                  }
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* 추가된 스티커 목록 */}
+            {placedStickers.length > 0 && (
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.stickerPlacedLabel}>추가된 스티커 — 탭하면 삭제</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                  {placedStickers.map(s => (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={styles.stickerPlacedChip}
+                      onPress={() => removeSticker(s.id)}
+                    >
+                      <Text style={{ fontSize: 22 }}>{s.emoji}</Text>
+                      <Text style={styles.stickerRemoveX}>✕</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={styles.stickerHint}>💡 카드 미리보기에서 드래그해서 위치를 바꿀 수 있어요</Text>
+              </View>
+            )}
+          </Card>
+        </View>
+
+        <PrimaryButton onPress={generateCard}>✨ 성장보고서 카드 만들기!</PrimaryButton>
         {/* ── Card Preview ── */}
         {cardVisible && (
           <View style={styles.cardSection}>
@@ -746,6 +935,9 @@ export default function CardMakerScreen({ route }) {
               special={special || '양쪽 팔, 왼쪽 발 몽고반점\n황달 겪음\n취미: 딸꾹질하기 토하기'}
               photoUri={photoUri}
               photoSize={photoSize}
+              stickers={placedStickers}
+              onStickerMove={updateStickerPos}
+              cardLayout={cardLayout}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
               {saving ? '저장 중...' : '💾 사진첩 & 앨범에 저장하기'}
@@ -803,7 +995,7 @@ function CardPattern({ pattern, width }) {
   );
 }
 const BabyCard = React.forwardRef(function BabyCard(
-  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize },
+  { theme: t, name, month, dateStr, hwStr, clothes, vaccine, sleep, feeding, diaper, dislikes, likes, special, photoUri, themeName, fontOverride, patternOverride, photoSize, stickers, onStickerMove, cardLayout },
   ref
 ) {
   const titleFf = fontOverride != null ? fontOverride
@@ -827,6 +1019,18 @@ const BabyCard = React.forwardRef(function BabyCard(
 
   function InfoBlock({ tag, content, flex }) {
     if (!content) return <View style={{ flex: flex || 1 }} />;
+
+    if (cardLayout === 'minimal') {
+      const textColor = t.dark ? 'rgba(255,255,255,0.92)' : (t.titleColor || '#4A3520');
+      const labelColor = t.dark ? 'rgba(255,255,255,0.55)' : (t.tagColor || '#8A7050');
+      return (
+        <View style={{ flex: flex || 1, paddingHorizontal: 4, paddingVertical: 4, alignItems: 'center' }}>
+          <Text style={{ fontSize: 10, fontWeight: '700', color: labelColor, fontFamily: bodyFf, marginBottom: 3, textAlign: 'center' }}>{tag}</Text>
+          <Text style={{ fontSize: 11, color: textColor, fontFamily: bodyFf, lineHeight: 16, textAlign: 'center' }}>{content}</Text>
+        </View>
+      );
+    }
+
     return (
       <View style={[cardStyles.infoBlock, { flex: flex || 1, backgroundColor: t.ibBg, borderColor: t.ibBorder }]}>
         <View style={[cardStyles.infoTag, { backgroundColor: t.tagBg }]}>
@@ -841,18 +1045,13 @@ const BabyCard = React.forwardRef(function BabyCard(
     <View ref={ref} style={[cardStyles.card, { backgroundColor: t.cardBg, width: SW }]}>
       <CardPattern pattern={effectivePattern} width={SW} />
       {/* Corner decos */}
-      <Text style={[cardStyles.deco, { top: 8, left: 12, transform: [{ rotate: '-15deg' }] }]}>{t.emoji[0]}</Text>
-      <Text style={[cardStyles.deco, { top: 8, right: 12, transform: [{ rotate: '12deg' }] }]}>{t.emoji[1]}</Text>
-      <Text style={[cardStyles.deco, { bottom: 8, left: 12, transform: [{ rotate: '8deg' }], opacity: 0.7 }]}>{t.emoji[2]}</Text>
-      <Text style={[cardStyles.deco, { bottom: 8, right: 12, transform: [{ rotate: '-10deg' }], opacity: 0.7 }]}>{t.emoji[3]}</Text>
-
       {/* Title */}
       <Text style={[cardStyles.title, {
         color: t.titleColor,
         fontFamily: titleFf,
         fontWeight: (fontOverride != null || t.titleFont || themeName === 'blossom') ? undefined : '800',
       }]}>
-        {t.emoji[0]} {name} {month}개월 성장보고서
+        {name} {month}개월 성장보고서
       </Text>
       {/* Date pill */}
       {dateStr ? (
@@ -910,6 +1109,11 @@ const BabyCard = React.forwardRef(function BabyCard(
       <Text style={[cardStyles.footer, { color: t.dark ? 'rgba(255,255,255,0.25)' : 'rgba(90,60,20,0.3)', fontFamily: bodyFf }]}>
         Made with BabySteps 🍼
       </Text>
+
+      {/* 스티커 레이어 */}
+      {stickers?.map(s => (
+        <StickerItem key={s.id} sticker={s} onMove={onStickerMove} />
+      ))}
     </View>
   );
 });
@@ -936,12 +1140,13 @@ const cardStyles = StyleSheet.create({
   row: { flexDirection: 'row', marginBottom: 6 },
   infoBlock: {
     borderRadius: 10, padding: 8, borderWidth: 1.5, flex: 1,
+    alignItems: 'center',
   },
   infoTag: {
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 4,
+    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'center', marginBottom: 4,
   },
-  infoTagText: { fontSize: 11, fontWeight: '700' },
-  infoBody: { fontSize: 11, color: '#4A3520', lineHeight: 17 },
+  infoTagText: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  infoBody: { fontSize: 11, color: '#4A3520', lineHeight: 17, textAlign: 'center' },
   photoCircle: {
     width: 120, height: 120, borderRadius: 60, borderWidth: 3,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
@@ -1124,4 +1329,24 @@ const styles = StyleSheet.create({
     color: '#C87820',
     fontWeight: '700',
   },
+  stickerPickBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  stickerPickEmoji: { fontSize: 32 },
+  stickerPlacedLabel: { fontSize: 11, color: '#8A7050', fontWeight: '600' },
+  stickerPlacedChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: '#FFF0C0', borderRadius: 10,
+    paddingHorizontal: 8, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#E8A020',
+  },
+  stickerRemoveX: { fontSize: 10, color: '#C06030', fontWeight: '700' },
+  stickerHint: { fontSize: 11, color: '#A09070', marginTop: 8, lineHeight: 16 },
+  layoutChip: {
+    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12,
+    borderWidth: 1.5, borderColor: '#EAD9C0', backgroundColor: '#FFFDF5', gap: 2,
+  },
+  layoutChipActive: { backgroundColor: '#FFF0C0', borderColor: '#E8A020' },
+  layoutChipDesc: { fontSize: 18, color: '#A09070' },
 });

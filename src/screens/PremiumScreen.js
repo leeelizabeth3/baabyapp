@@ -7,6 +7,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isPremium, setPremium, FREE_THEMES, getProducts, purchaseProduct, disconnectIAP, PRODUCTS, addPurchaseListener, restorePurchases } from '../utils/purchase';
 import { THEME_LIST } from '../data/themes';
+import SproutMascot from '../components/SproutMascot';
 
 export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
   const insets = useSafeAreaInsets();
@@ -81,7 +82,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.alreadyWrap}>
-          <Text style={styles.alreadyEmoji}>🎉</Text>
+          <SproutMascot size={90} expression="excited" />
           <Text style={styles.alreadyTitle}>프리미엄 사용 중이에요!</Text>
           <Text style={styles.alreadySub}>모든 테마 16개 + 배경 패턴 5종 + 폰트 3종 + 사진 크기 크게를 자유롭게 사용하세요 🐾</Text>
           {onClose && (
@@ -100,7 +101,7 @@ export default function PremiumScreen({ onClose, onPurchaseSuccess }) {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerEmoji}>✨</Text>
+          <SproutMascot size={80} expression="happy" />
           <Text style={styles.headerTitle}>BabySteps Premium</Text>
           <Text style={styles.headerSub}>더 많은 테마와 폰트로 특별한 추억을 만들어요</Text>
         </View>
@@ -228,12 +229,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF8E0' },
   scroll: { padding: 20, paddingBottom: 40 },
   alreadyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  alreadyEmoji: { fontSize: 64, marginBottom: 16 },
-  alreadyTitle: { fontSize: 24, fontWeight: '800', color: '#5A3A10', marginBottom: 8 },
+  alreadyTitle: { fontSize: 24, fontWeight: '800', color: '#5A3A10', marginBottom: 8, marginTop: 8 },
   alreadySub: { fontSize: 15, color: '#8A7050', textAlign: 'center', lineHeight: 22 },
   header: { alignItems: 'center', marginBottom: 24 },
-  headerEmoji: { fontSize: 48, marginBottom: 8 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: '#5A3A10' },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: '#5A3A10', marginTop: 4 },
   headerSub: { fontSize: 13, color: '#8A6830', marginTop: 4, textAlign: 'center' },
   themeSection: {
     backgroundColor: '#fff', borderRadius: 16, padding: 16,

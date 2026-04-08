@@ -4,6 +4,7 @@ import {
   View, Text, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, ScrollView,
 } from 'react-native';
+import SproutMascot from './SproutMascot';
 
 export const COLORS = {
   yellow: '#FFE070',
@@ -20,14 +21,22 @@ export const COLORS = {
 };
 
 // ── AppHeader ──────────────────────────────────
-export function AppHeader({ title = '🐝 아기 성장보고서', subtitle }) {
+export function AppHeader({ title = '아기 성장보고서', subtitle }) {
   return (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>{title}</Text>
-      {subtitle && <Text style={styles.headerSub}>{subtitle}</Text>}
+      <View style={styles.headerRow}>
+        <SproutMascot size={44} expression="happy" />
+        <View style={styles.headerTextWrap}>
+          <Text style={styles.headerTitle}>{title}</Text>
+          {subtitle && <Text style={styles.headerSub}>{subtitle}</Text>}
+        </View>
+      </View>
     </View>
   );
 }
+
+// ── SproutMascot re-export for convenience ─────
+export { default as SproutMascot } from './SproutMascot';
 
 // ── SectionTitle ───────────────────────────────
 export function SectionTitle({ children }) {
@@ -144,14 +153,22 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#FFE070',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 14,
+    paddingTop: 10,
+    paddingBottom: 10,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerTextWrap: {
+    flexShrink: 1,
   },
   headerTitle: {
     fontSize: 22,
