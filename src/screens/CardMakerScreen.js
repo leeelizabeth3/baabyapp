@@ -1,6 +1,7 @@
 // src/screens/CardMakerScreen.js
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState, useRef, useMemo, useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
   StyleSheet, Alert, Dimensions, Platform, Modal, Share,
@@ -54,7 +55,7 @@ const PHOTO_SIZE_OPTIONS = [
 
 
 const STICKER_CATEGORIES = [
-  { key: 'pastel', label: '🎨 파스텔', items: [
+  { key: 'pastel', label: '파스텔', items: [
     { source: require('../../assets/stickers/Cutechickwithbabybottle.png'), size: 95 },
     { source: require('../../assets/stickers/unicorn.png'), size: 95 },
     { source: require('../../assets/stickers/bathbear.png'), size: 95 },
@@ -69,7 +70,7 @@ const STICKER_CATEGORIES = [
   ]},
   { 
   key: 'baby',   
-  label: '👶 아기',  
+  label: '아기',  
   items: [
     '🍼','👶','🧸','🎀','🛁','🧷','💤','🤍',
     '👣','🫶','🧼','🪥','🧦','🛏️','🧻','🍼','🥛','🍌'
@@ -78,7 +79,7 @@ const STICKER_CATEGORIES = [
 
 { 
   key: 'nature', 
-  label: '🌸 자연',  
+  label: '자연',  
   items: [
     '🌸','🌻','🌈','☀️','⭐','🌟','🌿','🍀',
     '🌼','🌷','🌺','🌙','☁️','🌊','🍃','🌞'
@@ -87,7 +88,7 @@ const STICKER_CATEGORIES = [
 
 { 
   key: 'party',  
-  label: '🎉 축하',  
+  label: '축하',  
   items: [
     '🎊','🎉','🎈','🎁','🎂','✨','💕','💛',
     '💖','💝','🪅','🥳','🍰','🕯️','🎀','💐'
@@ -96,7 +97,7 @@ const STICKER_CATEGORIES = [
 
 { 
   key: 'animal', 
-  label: '🐣 동물',  
+  label: '동물',  
   items: [
     '🐣','🐥','🦋','🐰','🐻','🦊','🐸','🐤',
     '🐶','🐱','🐼','🐯','🐹','🐨','🐧','🦄'
@@ -122,8 +123,8 @@ async function schedule100DayNotification(babyName, birthdateStr) {
     await Notifications.cancelAllScheduledNotificationsAsync();
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `🎂 ${babyName || '아기'} 백일이에요!`,
-        body: '오늘 백일을 축하해요! 특별한 백일카드를 만들어보세요 🍼',
+        title: `${babyName || '아기'} 백일이에요!`,
+        body: '오늘 백일이에요! 특별한 백일카드를 만들어보세요.',
         sound: true,
       },
       trigger: { type: 'date', date: day100 },
@@ -165,7 +166,7 @@ function MonthDropdown({ value, onChange }) {
                   <Text style={[styles.dropdownItemText, value === m.value && styles.dropdownItemTextActive]}>
                     {m.label}
                   </Text>
-                  {value === m.value && <Text style={styles.dropdownItemCheck}>✓</Text>}
+                  {value === m.value && <Ionicons name="checkmark" size={14} color="#C87820" style={styles.dropdownItemCheck} />}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -197,7 +198,7 @@ function ThemeDropdown({ value, onChange, userIsPremium, onPressLocked }) {
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <TouchableOpacity style={styles.dropdownOverlay} activeOpacity={1} onPress={() => setOpen(false)}>
           <View style={[styles.dropdownList, { width: 290, maxHeight: 420 }]}>
-            <Text style={styles.dropdownListTitle}>🎨 테마 선택</Text>
+            <Text style={styles.dropdownListTitle}>테마 선택</Text>
             <ScrollView showsVerticalScrollIndicator={false}>
               {THEME_LIST.map(theme => {
                 const locked = !isThemeFree(theme.key) && !userIsPremium;
@@ -215,8 +216,8 @@ function ThemeDropdown({ value, onChange, userIsPremium, onPressLocked }) {
                       <Text style={{ fontSize: 22 }}>{theme.swatchIcon}</Text>
                     </View>
                     <Text style={[styles.dropdownItemText, active && styles.dropdownItemTextActive, { flex: 1 }]}>{theme.name}</Text>
-                    {locked && <Text style={{ fontSize: 14 }}>🔒</Text>}
-                    {active && !locked && <Text style={styles.dropdownItemCheck}>✓</Text>}
+                    {locked && <Ionicons name="lock-closed-outline" size={14} color="#C87820" />}
+                    {active && !locked && <Ionicons name="checkmark" size={14} color="#C87820" />}
                   </TouchableOpacity>
                 );
               })}
@@ -246,7 +247,7 @@ function PatternSwatch({ patternKey, label, active, onPress }) {  const previewC
             <Rect width="52" height="34" fill="url(#pp)" />
           </Svg>
         ) : patternKey === null ? (
-          <Text style={{ fontSize: 18 }}>🎨</Text>
+          <Ionicons name="color-palette-outline" size={18} color="#C87820" />
         ) : null}
       </View>
       <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{label}</Text>
@@ -523,7 +524,7 @@ export default function CardMakerScreen({ route }) {
         fileName: fileName,
       });
 
-      Alert.alert('저장 완료! 🎉', '앨범에 저장되었어요!');
+      Alert.alert('저장 완료', '앨범에 저장되었어요!');
     } catch (e) {
       Alert.alert('오류', '저장 중 오류가 발생했어요: ' + e.message);
     }
@@ -566,7 +567,7 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 아기 나이 계산기 ── */}
         <View style={styles.sec}>
-          <SectionTitle>🧮 아기 나이 계산기</SectionTitle>
+          <SectionTitle>아기 나이 계산기</SectionTitle>
           <Card>
             <RowFields>
               <View style={[styles.inlineField, { flex: 1 }]}>
@@ -588,7 +589,7 @@ export default function CardMakerScreen({ route }) {
                   <Text style={birthdate ? styles.dateBtnText : styles.dateBtnPlaceholder}>
                     {birthdate || '날짜 선택'}
                   </Text>
-                  <Text style={{ fontSize: 12 }}>🎂</Text>
+                  <Ionicons name="calendar-outline" size={12} color="#8A7050" />
                 </TouchableOpacity>
                 {showBirthPicker && (
                   <DateTimePicker
@@ -614,7 +615,7 @@ export default function CardMakerScreen({ route }) {
 
             <TouchableOpacity style={styles.premToggle} onPress={() => setIsPremature(v => !v)}>
               <View style={[styles.checkbox, isPremature && styles.checkboxActive]}>
-                {isPremature && <Text style={{ color: '#fff', fontSize: 10, lineHeight: 14 }}>✓</Text>}
+                {isPremature && <Ionicons name="checkmark" size={12} color="#fff" />}
               </View>
               <Text style={styles.premToggleText}>조산아예요 (교정나이 계산)</Text>
             </TouchableOpacity>
@@ -647,7 +648,7 @@ export default function CardMakerScreen({ route }) {
 
                   {ageInfo.corrected && (
                     <View style={styles.correctedBox}>
-                      <Text style={styles.correctedTitle}>👶 교정나이</Text>
+                      <Text style={styles.correctedTitle}>교정나이</Text>
                       <Text style={styles.correctedValue}>
                         {ageInfo.corrected.months}개월 {ageInfo.corrected.weeks}주
                       </Text>
@@ -664,7 +665,7 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 기본 정보 ── */}
         <View style={styles.sec}>
-          <SectionTitle>👶 기본 정보</SectionTitle>
+          <SectionTitle>기본 정보</SectionTitle>
           <Card>
             <View style={styles.inlineField}>
               <Text style={styles.inlineLabel}>개월 수</Text>
@@ -681,7 +682,7 @@ export default function CardMakerScreen({ route }) {
                   <Text style={dateStart ? styles.dateBtnText : styles.dateBtnPlaceholder}>
                     {dateStart || '날짜 선택'}
                   </Text>
-                  <Text style={{ fontSize: 12 }}>📅</Text>
+                  <Ionicons name="calendar-outline" size={12} color="#8A7050" />
                 </TouchableOpacity>
                 {showStartPicker && (
                   <DateTimePicker
@@ -703,7 +704,7 @@ export default function CardMakerScreen({ route }) {
                   <Text style={dateEnd ? styles.dateBtnText : styles.dateBtnPlaceholder}>
                     {dateEnd || '날짜 선택'}
                   </Text>
-                  <Text style={{ fontSize: 12 }}>📅</Text>
+                  <Ionicons name="calendar-outline" size={12} color="#8A7050" />
                 </TouchableOpacity>
                 {showEndPicker && (
                   <DateTimePicker
@@ -723,7 +724,7 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 키/몸무게 ── */}
         <View style={styles.sec}>
-          <SectionTitle>📐 키 / 몸무게</SectionTitle>
+          <SectionTitle>키 / 몸무게</SectionTitle>
           <Card>
             <RowFields>
               <FormField label="시작 키(cm)" style={{ flex: 1 }}>
@@ -746,30 +747,30 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 내용 ── */}
         <View style={styles.sec}>
-          <SectionTitle>📝 내용</SectionTitle>
+          <SectionTitle>내용</SectionTitle>
           <Card>
-            <FormField label="👗 옷사이즈">
+            <FormField label="옷사이즈">
               <StyledInput value={clothes} onChangeText={setClothes} placeholder="예) 배냇저고리 · 50사이즈" />
             </FormField>
-            <FormField label="😴 수면">
+            <FormField label="수면">
               <StyledInput value={sleep} onChangeText={setSleep} placeholder="예) 하루 15시간, 밤중 3회 수유" multiline numberOfLines={2} />
             </FormField>
-            <FormField label="🍼 맘마">
+            <FormField label="맘마">
               <StyledInput value={feeding} onChangeText={setFeeding} placeholder="예) 분유 80ml × 8회 / 모유수유" multiline numberOfLines={2} />
             </FormField>
-            <FormField label="🧷 기저귀">
+            <FormField label="기저귀">
               <StyledInput value={diaper} onChangeText={setDiaper} placeholder="예) 하기스 1단계" />
             </FormField>
-            <FormField label="💉 접종내역">
+            <FormField label="접종내역">
               <StyledInput value={vaccine} onChangeText={setVaccine} placeholder="예) B형 간염 1차" />
             </FormField>
-            <FormField label="❤️ 좋아해요">
+            <FormField label="좋아해요">
               <StyledInput value={likes} onChangeText={setLikes} placeholder="예) 모빌 보기, 목욕" multiline />
             </FormField>
-            <FormField label="😤 싫어해요">
+            <FormField label="싫어해요">
               <StyledInput value={dislikes} onChangeText={setDislikes} placeholder="예) 배 가스참, 기저귀 갈기" multiline />
             </FormField>
-            <FormField label="✨ 특이사항">
+            <FormField label="특이사항">
               <StyledInput value={special} onChangeText={setSpecial} placeholder="예) 몽고반점, 황달 겪음" multiline />
             </FormField>
           </Card>
@@ -777,28 +778,31 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 사진 ── */}
         <View style={styles.sec}>
-          <SectionTitle>📸 아기 사진</SectionTitle>
+          <SectionTitle>아기 사진</SectionTitle>
           <Card>
             <TouchableOpacity style={styles.photoArea} onPress={pickImage}>
               {photoUri ? (
                 <Image source={{ uri: photoUri }} style={styles.photoPreview} />
               ) : (
                 <>
-                  <Text style={styles.photoIcon}>📷</Text>
+                  <Ionicons name="camera-outline" size={24} color="#A09070" />
                   <Text style={styles.photoText}>탭해서 사진 선택</Text>
-                  <Text style={styles.photoSub}>없으면 이모지로 대체 🍼</Text>
+                  <Text style={styles.photoSub}>없으면 기본 이미지 사용</Text>
                 </>
               )}
             </TouchableOpacity>
             {photoUri && (
               <TouchableOpacity onPress={() => setPhotoUri(null)} style={{ alignSelf: 'center', marginTop: 8 }}>
-                <Text style={{ color: '#E06040', fontSize: 13 }}>✕ 사진 삭제</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="close-circle-outline" size={14} color="#E06040" />
+                  <Text style={{ color: '#E06040', fontSize: 13 }}>사진 삭제</Text>
+                </View>
               </TouchableOpacity>
             )}
 
             {/* Photo size picker */}
             <View style={[styles.fontPickerSection, { marginTop: 14 }]}>
-              <Text style={styles.fontPickerLabel}>📐 사진 크기</Text>
+              <Text style={styles.fontPickerLabel}>사진 크기</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {PHOTO_SIZE_OPTIONS.map(opt => {
                   const locked = opt.premium && !userIsPremium;
@@ -808,9 +812,12 @@ export default function CardMakerScreen({ route }) {
                       style={[styles.chip, { flex: 1, alignItems: 'center' }, photoSize === opt.key && styles.chipActive]}
                       onPress={() => locked ? setShowPremium(true) : setPhotoSize(opt.key)}
                     >
-                      <Text style={[styles.chipText, photoSize === opt.key && styles.chipTextActive]}>
-                        {opt.label}{locked ? ' 🔒' : ''}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={[styles.chipText, photoSize === opt.key && styles.chipTextActive]}>
+                          {opt.label}
+                        </Text>
+                        {locked && <Ionicons name="lock-closed-outline" size={10} color="#C87820" />}
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -822,7 +829,7 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 테마 선택 ── */}
         <View style={styles.sec}>
-          <SectionTitle>🎨 테마 선택</SectionTitle>
+          <SectionTitle>테마 선택</SectionTitle>
           <Card>
             <ThemeDropdown
               value={selectedTheme}
@@ -833,7 +840,7 @@ export default function CardMakerScreen({ route }) {
 
             {/* 폰트 선택 */}
             <View style={styles.fontPickerSection}>
-              <Text style={styles.fontPickerLabel}>✏️ 폰트</Text>
+              <Text style={styles.fontPickerLabel}>폰트</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
                 {FONT_OPTIONS.map(opt => {
                   const active = selectedFont === opt.key;
@@ -846,7 +853,7 @@ export default function CardMakerScreen({ route }) {
                     >
                       <View style={{ position: 'relative' }}>
                         <Text style={[styles.fontChipSample, { fontFamily: opt.key || undefined, opacity: locked ? 0.4 : 1 }]}>{opt.sample}</Text>
-                        {locked && <Text style={{ position: 'absolute', top: -4, right: -4, fontSize: 12 }}>🔒</Text>}
+                        {locked && <Ionicons name="lock-closed-outline" size={12} color="#C87820" style={{ position: 'absolute', top: -4, right: -4 }} />}
                       </View>
                       <Text style={[styles.fontChipLabel, active && styles.fontChipLabelActive]}>{opt.label}</Text>
                     </TouchableOpacity>
@@ -857,7 +864,7 @@ export default function CardMakerScreen({ route }) {
 
             {/* 배경 패턴 선택 */}
             <View style={styles.fontPickerSection}>
-              <Text style={styles.fontPickerLabel}>🌀 배경 패턴</Text>
+              <Text style={styles.fontPickerLabel}>배경 패턴</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
                 {/* 코너데코없음 */}
                 <TouchableOpacity
@@ -865,7 +872,7 @@ export default function CardMakerScreen({ route }) {
                   style={[styles.fontChip, !showCornerDeco && styles.fontChipActive]}
                 >
                   <View style={{ width: 52, height: 34, borderRadius: 6, backgroundColor: '#F0EEF8', marginBottom: 4, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 18, opacity: 0.4 }}>🚫</Text>
+                    <Ionicons name="ban-outline" size={18} color="#CCCCCC" />
                   </View>
                   <Text style={[styles.fontChipLabel, !showCornerDeco && styles.fontChipLabelActive]}>코너없음</Text>
                 </TouchableOpacity>
@@ -890,7 +897,7 @@ export default function CardMakerScreen({ route }) {
                         ) : null}
                         {locked && (
                           <View style={[styles.lockOverlay, { borderRadius: 6 }]}>
-                            <Text style={{ fontSize: 14 }}>🔒</Text>
+                            <Ionicons name="lock-closed-outline" size={14} color="#C87820" />
                           </View>
                         )}
                       </View>
@@ -903,7 +910,7 @@ export default function CardMakerScreen({ route }) {
 
             {/* 카드 레이아웃 */}
             <View style={styles.fontPickerSection}>
-              <Text style={styles.fontPickerLabel}>📋 카드 레이아웃</Text>
+              <Text style={styles.fontPickerLabel}>카드 레이아웃</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {[
                   { key: 'boxed',   label: '박스형',   desc: '□' },
@@ -936,7 +943,7 @@ export default function CardMakerScreen({ route }) {
 
         {/* ── 스티커 ── */}
         <View style={styles.sec}>
-          <SectionTitle>🎀 스티커</SectionTitle>
+          <SectionTitle>스티커</SectionTitle>
           <Card>
             {/* 카테고리 탭 */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
@@ -980,21 +987,26 @@ export default function CardMakerScreen({ route }) {
                       onPress={() => removeSticker(s.id)}
                     >
                       <Text style={{ fontSize: 22 }}>{s.emoji}</Text>
-                      <Text style={styles.stickerRemoveX}>✕</Text>
+                      <Ionicons name="close" size={12} color="#fff" />
                     </TouchableOpacity>
                   ))}
                 </View>
-                <Text style={styles.stickerHint}>💡 드래그: 위치 이동 · 두 손가락 핀치: 크기 조절 · 두 손가락 회전: 방향 변경</Text>
+                <Text style={styles.stickerHint}>드래그: 위치 이동 · 두 손가락 핀치: 크기 조절 · 두 손가락 회전: 방향 변경</Text>
               </View>
             )}
           </Card>
         </View>
 
-        <PrimaryButton onPress={generateCard}>✨ 성장보고서 카드 만들기!</PrimaryButton>
+        <PrimaryButton onPress={generateCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="star-outline" size={18} color="#5A3A10" />
+            <Text style={{ fontSize: 16, fontWeight: '800', color: '#4A3520' }}>성장보고서 카드 만들기!</Text>
+          </View>
+        </PrimaryButton>
         {/* ── Card Preview ── */}
         {cardVisible && (
           <View style={styles.cardSection}>
-            <Text style={styles.cardHint}>👇 완성된 성장보고서</Text>
+            <Text style={styles.cardHint}>완성된 성장보고서</Text>
             <BabyCard
               ref={cardRef}
               theme={t}
@@ -1022,10 +1034,20 @@ export default function CardMakerScreen({ route }) {
               cornerDeco={showCornerDeco ? t.swatchIcon : null}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
-              {saving ? '저장 중...' : '💾 사진첩 & 앨범에 저장하기'}
+              {saving ? '저장 중...' : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="download-outline" size={16} color="#fff" />
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: '#fff' }}>사진첩 & 앨범에 저장하기</Text>
+                </View>
+              )}
             </SecondaryButton>
             <SecondaryButton onPress={shareCard} style={[{ marginTop: 8, backgroundColor: '#4A90D9', borderColor: '#2E70B8' }, saving ? { opacity: 0.7 } : {}]}>
-              {saving ? '처리 중...' : '📤 인스타·카카오톡·페이스북 공유'}
+              {saving ? '처리 중...' : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="share-outline" size={16} color="#fff" />
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: '#fff' }}>인스타·카카오톡·페이스북 공유</Text>
+                </View>
+              )}
             </SecondaryButton>
           </View>
         )}
@@ -1155,18 +1177,18 @@ const BabyCard = React.forwardRef(function BabyCard(
 
       {/* TOP ROW: 키/몸무게 | 접종내역 | 옷사이즈 */}
       <View style={cardStyles.row}>
-        <InfoBlock tag="📐 키/몸무게" content={hwStr} />
+        <InfoBlock tag="키/몸무게" content={hwStr} />
         <View style={{ width: 6 }} />
-        <InfoBlock tag="💉 접종내역" content={vaccine} />
+        <InfoBlock tag="접종내역" content={vaccine} />
         <View style={{ width: 6 }} />
-        <InfoBlock tag="👗 옷사이즈" content={clothes} />
+        <InfoBlock tag="옷사이즈" content={clothes} />
       </View>
 
       {/* MID ROW: 수면+맘마 | Photo | 기저귀+싫어 */}
       <View style={[cardStyles.row, { alignItems: 'center', marginVertical: 6 }]}>
         <View style={{ flex: 1, gap: 6 }}>
-          <InfoBlock tag="😴 수면" content={sleep} />
-          <InfoBlock tag="🍼 맘마" content={feeding} />
+          <InfoBlock tag="수면" content={sleep} />
+          <InfoBlock tag="맘마" content={feeding} />
         </View>
         <View style={{ width: 6 }} />
         {/* Photo circle */}
@@ -1180,27 +1202,27 @@ const BabyCard = React.forwardRef(function BabyCard(
             }]}>
               {photoUri
                 ? <Image source={{ uri: photoUri }} style={cardStyles.photoImg} />
-                : <Text style={{ fontSize: 44, opacity: 0.5 }}>🍼</Text>
+                : <Ionicons name="person-outline" size={44} color="#D4B896" />
               }
             </View>
           );
         })()}
         <View style={{ width: 6 }} />
         <View style={{ flex: 1, gap: 6 }}>
-          <InfoBlock tag="🧷 기저귀" content={diaper} />
-          <InfoBlock tag="😤 싫어하는 것" content={dislikes} />
+          <InfoBlock tag="기저귀" content={diaper} />
+          <InfoBlock tag="싫어하는 것" content={dislikes} />
         </View>
       </View>
 
       {/* BOTTOM ROW: 좋아하는것 | 특이사항 */}
       <View style={cardStyles.row}>
-        {likes ? <InfoBlock tag="❤️ 좋아하는 것" content={likes} /> : null}
+        {likes ? <InfoBlock tag="좋아하는 것" content={likes} /> : null}
         {likes && special ? <View style={{ width: 6 }} /> : null}
-        {special ? <InfoBlock tag="✨ 특이사항" content={special} /> : null}
+        {special ? <InfoBlock tag="특이사항" content={special} /> : null}
       </View>
 
       <Text style={[cardStyles.footer, { color: t.dark ? 'rgba(255,255,255,0.25)' : 'rgba(90,60,20,0.3)', fontFamily: bodyFf }]}>
-        Made with BabySteps 🍼
+        Made with BabySteps
       </Text>
 
       {/* 스티커 레이어 */}

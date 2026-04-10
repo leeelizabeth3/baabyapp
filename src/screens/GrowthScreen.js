@@ -4,6 +4,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, Alert, Dimensions,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
@@ -60,23 +61,23 @@ export default function GrowthScreen({ navigation }) {
     const pHC = !isNaN(hc) ? getPercentile(hc, mo, gender, WHO_HEAD)   : null;
 
     const all = [pH, pW, pHC].filter(p => p !== null);
-    let icon, title, body;
+    let icon, iconColor, title, body;
     if (all.some(p => p < 3 || p > 97)) {
-      icon = '⚠️'; title = '소아과 상담을 권장해요';
+      icon = 'warning-outline'; iconColor = '#E8823A'; title = '소아과 상담을 권장해요';
       body = 'P3 미만 또는 P97 초과 수치가 있어요. 소아과에서 상담받아 보세요.';
     } else if (all.some(p => p < 15)) {
-      icon = '💙'; title = '조금 작은 편이에요';
+      icon = 'heart-outline'; iconColor = '#7AB8DC'; title = '조금 작은 편이에요';
       body = '평균보다 작지만 정상 범위 안에 있어요. 꾸준한 영양 섭취가 중요해요!';
     } else if (all.some(p => p > 85)) {
-      icon = '🌟'; title = '씩씩하게 자라고 있어요!';
+      icon = 'star-outline'; iconColor = '#F5A623'; title = '씩씩하게 자라고 있어요!';
       body = '또래보다 큰 편이에요. 건강하게 성장하고 있답니다.';
     } else {
-      icon = '💚'; title = '아주 잘 자라고 있어요! 🎉';
+      icon = 'leaf-outline'; iconColor = '#7DC87A'; title = '아주 잘 자라고 있어요!';
       body = 'WHO 기준 정상 범위(P15~P85) 안에 있어요. 건강하게 쑥쑥 크고 있네요!';
     }
     setResult({
       mo, h: isNaN(h) ? null : h, w: isNaN(w) ? null : w, hc: isNaN(hc) ? null : hc,
-      pH, pW, pHC, icon, title, body,
+      pH, pW, pHC, icon, iconColor, title, body,
       feedingRec: getFeedingRec(mo, isNaN(w) ? null : w),
     });
   };
@@ -93,7 +94,7 @@ export default function GrowthScreen({ navigation }) {
     };
     const updated = await saveGrowthRecord(record);
     setRecords(updated);
-    Alert.alert('저장 완료! 📋', '기록이 저장되었어요!');
+    Alert.alert('저장 완료!', '기록이 저장되었어요!');
   };
 
   const handleDelete = async (id) => {
@@ -117,7 +118,9 @@ export default function GrowthScreen({ navigation }) {
         {/* Baby profile */}
         <Card style={styles.profileCard}>
           <View style={styles.profileRow}>
-            <Text style={styles.profileAvatar}>👶</Text>
+            <View style={styles.profileAvatar}>
+              <Ionicons name="person" size={40} color="#C8A870" />
+            </View>
             <TextInput
               style={styles.profileName}
               value={babyName}
@@ -130,13 +133,13 @@ export default function GrowthScreen({ navigation }) {
                 style={[styles.genderBtn, gender === 'girl' && styles.genderBtnGirlActive]}
                 onPress={() => { setGender('girl'); updateProfile('gender', 'girl'); }}
               >
-                <Text>👧</Text>
+                <Ionicons name="female" size={16} color="#E8506A" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.genderBtn, gender === 'boy' && styles.genderBtnBoyActive]}
                 onPress={() => { setGender('boy'); updateProfile('gender', 'boy'); }}
               >
-                <Text>👦</Text>
+                <Ionicons name="male" size={16} color="#3A7EC8" />
               </TouchableOpacity>
             </View>
           </View>
@@ -144,7 +147,7 @@ export default function GrowthScreen({ navigation }) {
 
         {/* Sub-tabs */}
         <View style={styles.subTabRow}>
-          {[['entry','📏 입력'], ['history','📋 기록'], ['chart','📈 그래프'], ['milestone','🌱 발달']].map(([key, label]) => (
+          {[['entry','입력'], ['history','기록'], ['chart','그래프'], ['milestone','발달']].map(([key, label]) => (
             <TouchableOpacity
               key={key}
               style={[styles.subTab, subTab === key && styles.subTabActive]}
@@ -159,11 +162,11 @@ export default function GrowthScreen({ navigation }) {
         {subTab === 'entry' && (
           <>
             <View style={styles.whoChip}>
-              <Text style={styles.whoChipText}>✅ WHO Child Growth Standards 기준</Text>
+              <Text style={styles.whoChipText}>WHO Child Growth Standards 기준</Text>
             </View>
 
             <Card>
-              <Text style={styles.entrySubtitle}>📅 측정 정보</Text>
+              <Text style={styles.entrySubtitle}>측정 정보</Text>
               {/* Age selector: Year + Month */}
               <Text style={styles.fieldLabel}>나이 선택 (0~4세)</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
@@ -219,9 +222,9 @@ export default function GrowthScreen({ navigation }) {
 
               <Text style={[styles.fieldLabel, { marginTop: 12 }]}>측정값</Text>
               <View style={styles.measRow}>
-                <MeasField emoji="📐" label="키" value={height} onChange={setHeight} unit="cm" />
-                <MeasField emoji="⚖️" label="몸무게" value={weight} onChange={setWeight} unit="kg" />
-                <MeasField emoji="🧠" label="머리둘레" value={head} onChange={setHead} unit="cm" />
+                <MeasField icon="resize-outline" label="키" value={height} onChange={setHeight} unit="cm" />
+                <MeasField icon="scale-outline" label="몸무게" value={weight} onChange={setWeight} unit="kg" />
+                <MeasField icon="fitness-outline" label="머리둘레" value={head} onChange={setHead} unit="cm" />
               </View>
 
               <PrimaryButton onPress={calcPercentiles}>백분위수 계산하기 →</PrimaryButton>
@@ -231,14 +234,14 @@ export default function GrowthScreen({ navigation }) {
             {result && (
               <>
                 <View style={styles.pctRow}>
-                  <PctCard emoji="📐" label="키" value={result.h} unit="cm" pct={result.pH} />
-                  <PctCard emoji="⚖️" label="몸무게" value={result.w} unit="kg" pct={result.pW} />
-                  <PctCard emoji="🧠" label="머리둘레" value={result.hc} unit="cm" pct={result.pHC} />
+                  <PctCard icon="resize-outline" label="키" value={result.h} unit="cm" pct={result.pH} />
+                  <PctCard icon="scale-outline" label="몸무게" value={result.w} unit="kg" pct={result.pW} />
+                  <PctCard icon="fitness-outline" label="머리둘레" value={result.hc} unit="cm" pct={result.pHC} />
                 </View>
 
                 <Card style={styles.interpCard}>
                   <View style={styles.interpRow}>
-                    <Text style={styles.interpIcon}>{result.icon}</Text>
+                    <Ionicons name={result.icon} size={24} color={result.iconColor} style={styles.interpIcon} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.interpTitle}>{result.title}</Text>
                       <Text style={styles.interpBody}>{result.body}</Text>
@@ -249,42 +252,48 @@ export default function GrowthScreen({ navigation }) {
                 {/* 수유 권장량 - 0세(0~12개월)만 표시 */}
                 {result.mo <= 12 && (
                 <Card style={styles.feedCard}>
-                  <Text style={styles.feedTitle}>🍼 수유 권장량</Text>
+                  <Text style={styles.feedTitle}>수유 권장량</Text>
                   {result.w && <Text style={styles.feedBasis}>체중 {result.w}kg 기준</Text>}
                   <View style={styles.feedRow}>
                     <View style={styles.feedItem}>
-                      <Text style={styles.feedItemEmoji}>☀️</Text>
+                      <Ionicons name="sunny-outline" size={20} color="#F5A623" style={styles.feedItemIcon} />
                       <Text style={styles.feedItemLabel}>하루 총 수유량</Text>
                       <Text style={styles.feedItemValue}>{result.feedingRec.dailyTotal}</Text>
                     </View>
                     <View style={styles.feedDivider} />
                     <View style={styles.feedItem}>
-                      <Text style={styles.feedItemEmoji}>🍼</Text>
+                      <Ionicons name="water-outline" size={20} color="#70B8D8" style={styles.feedItemIcon} />
                       <Text style={styles.feedItemLabel}>1회 수유량</Text>
                       <Text style={styles.feedItemValue}>{result.feedingRec.perFeed}</Text>
                     </View>
                     <View style={styles.feedDivider} />
                     <View style={styles.feedItem}>
-                      <Text style={styles.feedItemEmoji}>🔁</Text>
+                      <Ionicons name="repeat-outline" size={20} color="#A07880" style={styles.feedItemIcon} />
                       <Text style={styles.feedItemLabel}>하루 횟수</Text>
                       <Text style={styles.feedItemValue}>{result.feedingRec.freq}</Text>
                     </View>
                   </View>
                   {result.feedingRec.note && (
-                    <Text style={styles.feedNote}>💡 {result.feedingRec.note}</Text>
+                    <View style={styles.feedNoteRow}>
+                      <Ionicons name="information-circle-outline" size={14} color="#6A8A50" />
+                      <Text style={styles.feedNote}> {result.feedingRec.note}</Text>
+                    </View>
                   )}
                   <Text style={styles.feedDisclaimer}>* 모유/분유 공통 참고값. 아기마다 차이가 있어요.</Text>
                 </Card>
                 )}
 
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                  <Text style={styles.saveBtnText}>📋 기록 저장하기</Text>
+                  <Text style={styles.saveBtnText}>기록 저장하기</Text>
                 </TouchableOpacity>
 
                 <View style={styles.disclaimer}>
-                  <Text style={styles.disclaimerText}>
-                    ⚠️ WHO 기준 참고용 (0~4세). P3 미만 또는 P97 초과 시 소아과 상담 권장.
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+                    <Ionicons name="warning-outline" size={13} color="#8A7040" style={{ marginTop: 2 }} />
+                    <Text style={[styles.disclaimerText, { flex: 1 }]}>
+                      WHO 기준 참고용 (0~4세). P3 미만 또는 P97 초과 시 소아과 상담 권장.
+                    </Text>
+                  </View>
                 </View>
               </>
             )}
@@ -294,8 +303,8 @@ export default function GrowthScreen({ navigation }) {
         {/* ── HISTORY ── */}
         {subTab === 'history' && (
           records.length === 0
-            ? <View style={{ marginTop: 40 }}>
-                <Text style={{ textAlign: 'center', fontSize: 48 }}>📏</Text>
+            ? <View style={{ marginTop: 40, alignItems: 'center' }}>
+                <Ionicons name="resize-outline" size={48} color="#D4B896" />
                 <Text style={{ textAlign: 'center', color: '#A09070', marginTop: 12, fontSize: 14 }}>
                   아직 저장된 기록이 없어요{'\n'}첫 번째 측정을 입력해보세요!
                 </Text>
@@ -308,11 +317,15 @@ export default function GrowthScreen({ navigation }) {
                       <Text style={styles.recUnit}>{r.month < 24 ? '개월' : '세'}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.recDate}>{r.date} · {r.sex === 'girl' ? '👧' : '👦'} {r.name} · {formatAge(r.month)}</Text>
+                      <View style={styles.recDateRow}>
+                        <Text style={styles.recDate}>{r.date} · </Text>
+                        <Ionicons name={r.sex === 'girl' ? 'female' : 'male'} size={13} color={r.sex === 'girl' ? '#E8506A' : '#3A7EC8'} />
+                        <Text style={styles.recDate}> {r.name} · {formatAge(r.month)}</Text>
+                      </View>
                       <View style={styles.recVals}>
-                        {r.h !== null && <RecVal icon="📐" val={`${r.h}cm`} pct={r.pH} />}
-                        {r.w !== null && <RecVal icon="⚖️" val={`${r.w}kg`} pct={r.pW} />}
-                        {r.hc !== null && <RecVal icon="🧠" val={`${r.hc}cm`} pct={r.pHC} />}
+                        {r.h !== null && <RecVal icon="resize-outline" val={`${r.h}cm`} pct={r.pH} />}
+                        {r.w !== null && <RecVal icon="scale-outline" val={`${r.w}kg`} pct={r.pW} />}
+                        {r.hc !== null && <RecVal icon="fitness-outline" val={`${r.hc}cm`} pct={r.pHC} />}
                       </View>
                     </View>
                     <TouchableOpacity onPress={() => handleDelete(r.id)} style={styles.recDel}>
@@ -332,9 +345,9 @@ export default function GrowthScreen({ navigation }) {
             : 12;
           return (
           <>
-            <GrowthChart title="⚖️ 몸무게" table={WHO_WEIGHT} field="w" gender={gender} records={records} color="#E8823A" unit="kg" maxChartMonth={chartMaxMonth} />
-            <GrowthChart title="📐 키" table={WHO_HEIGHT} field="h" gender={gender} records={records} color="#7DC87A" unit="cm" maxChartMonth={chartMaxMonth} />
-            <GrowthChart title="🧠 머리둘레" table={WHO_HEAD} field="hc" gender={gender} records={records} color="#7AB8DC" unit="cm" maxChartMonth={chartMaxMonth} />
+            <GrowthChart title="몸무게" table={WHO_WEIGHT} field="w" gender={gender} records={records} color="#E8823A" unit="kg" maxChartMonth={chartMaxMonth} />
+            <GrowthChart title="키" table={WHO_HEIGHT} field="h" gender={gender} records={records} color="#7DC87A" unit="cm" maxChartMonth={chartMaxMonth} />
+            <GrowthChart title="머리둘레" table={WHO_HEAD} field="hc" gender={gender} records={records} color="#7AB8DC" unit="cm" maxChartMonth={chartMaxMonth} />
             <View style={styles.disclaimer}>
               <Text style={styles.disclaimerText}>
                 WHO P3·P15·P50(평균)·P85·P97 기준선 (0~{chartMaxMonth / 12}세) / 빨간 점 = 우리 아기
@@ -383,7 +396,7 @@ export default function GrowthScreen({ navigation }) {
                     <Text style={styles.msTitle}>{ms.stage}</Text>
                     <Text style={styles.msProgress}>{checkedCount}/{totalItems} 달성</Text>
                   </View>
-                  {allDone && <Text style={{ fontSize: 24 }}>🏆</Text>}
+                  {allDone && <Ionicons name="trophy-outline" size={24} color="#F5A623" />}
                 </View>
 
                 {/* 진행 바 */}
@@ -393,7 +406,7 @@ export default function GrowthScreen({ navigation }) {
 
                 {/* 체크리스트 */}
                 <Text style={[styles.fieldLabel, { marginTop: 14, marginBottom: 8 }]}>
-                  ✅ 발달 체크리스트 (WHO/AAP 기준)
+                  발달 체크리스트 (WHO/AAP 기준)
                 </Text>
                 {ms.checkItems.map(item => {
                   const done = !!checks[`${milestoneMonth}_${item.id}`];
@@ -417,22 +430,25 @@ export default function GrowthScreen({ navigation }) {
               {/* 달성 축하 배너 */}
               {allDone && (
                 <Card style={styles.msCelebCard}>
-                  <Text style={styles.msCelebTitle}>🎉 {ms.stage} 마일스톤 완료!</Text>
+                  <View style={styles.msCelebTitleRow}>
+                    <Ionicons name="gift-outline" size={18} color="#C87820" />
+                    <Text style={styles.msCelebTitle}> {ms.stage} 마일스톤 완료!</Text>
+                  </View>
                   <Text style={styles.msCelebBody}>
-                    모든 발달 항목을 달성했어요!{'\n'}기념 카드로 특별한 순간을 남겨보세요 💕
+                    모든 발달 항목을 달성했어요!{'\n'}기념 카드로 특별한 순간을 남겨보세요.
                   </Text>
                   <TouchableOpacity
                     style={styles.msCelebBtn}
                     onPress={() => navigation.navigate('CardMaker', { milestoneMonth, babyName })}
                   >
-                    <Text style={styles.msCelebBtnText}>📸 기념 카드 만들기 →</Text>
+                    <Text style={styles.msCelebBtnText}>기념 카드 만들기</Text>
                   </TouchableOpacity>
                 </Card>
               )}
 
               {/* 육아 팁 */}
               <Card>
-                <Text style={[styles.fieldLabel, { marginBottom: 10 }]}>💡 이번 달 육아 팁</Text>
+                <Text style={[styles.fieldLabel, { marginBottom: 10 }]}>이번 달 육아 팁</Text>
                 {ms.tips.map((tip, i) => (
                   <Text key={i} style={styles.msTipText}>{tip}</Text>
                 ))}
@@ -440,7 +456,7 @@ export default function GrowthScreen({ navigation }) {
 
               {/* 놀이 추천 */}
               <Card style={{ marginTop: 14 }}>
-                <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>🎮 이번 달 놀이 & 장난감 추천</Text>
+                <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>이번 달 놀이 & 장난감 추천</Text>
                 {ms.play.map((item, i) => (
                   <View key={i} style={[styles.playCard, item.isToy && styles.playCardToy]}>
                     <View style={styles.playHeader}>
@@ -453,9 +469,12 @@ export default function GrowthScreen({ navigation }) {
               </Card>
 
               <View style={styles.disclaimer}>
-                <Text style={styles.disclaimerText}>
-                  ⚠️ WHO/AAP 기준 참고용. 아기마다 발달 속도가 달라요. 걱정되면 소아과에서 상담하세요.
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+                  <Ionicons name="warning-outline" size={13} color="#8A7040" style={{ marginTop: 2 }} />
+                  <Text style={[styles.disclaimerText, { flex: 1 }]}>
+                    WHO/AAP 기준 참고용. 아기마다 발달 속도가 달라요. 걱정되면 소아과에서 상담하세요.
+                  </Text>
+                </View>
               </View>
             </>
           );
@@ -529,10 +548,10 @@ function getFeedingRec(month, weightKg) {
   return { dailyTotal, perFeed: rec.perFeed, freq: rec.freq, note };
 }
 
-function MeasField({ emoji, label, value, onChange, unit }) {
+function MeasField({ icon, label, value, onChange, unit }) {
   return (
     <View style={measStyles.wrap}>
-      <Text style={measStyles.emoji}>{emoji}</Text>
+      <Ionicons name={icon} size={20} color="#8A7050" style={measStyles.icon} />
       <Text style={measStyles.label}>{label}</Text>
       <TextInput
         style={measStyles.input}
@@ -548,7 +567,7 @@ function MeasField({ emoji, label, value, onChange, unit }) {
 }
 const measStyles = StyleSheet.create({
   wrap: { flex: 1, alignItems: 'center' },
-  emoji: { fontSize: 20, marginBottom: 3 },
+  icon: { marginBottom: 3 },
   label: { fontSize: 10, color: '#8A7050', fontWeight: '600', marginBottom: 4 },
   input: {
     borderWidth: 1.5, borderColor: '#EAD9C0', borderRadius: 10,
@@ -558,13 +577,13 @@ const measStyles = StyleSheet.create({
   unit: { fontSize: 10, color: '#A09070', marginTop: 3 },
 });
 
-function PctCard({ emoji, label, value, unit, pct }) {
+function PctCard({ icon, label, value, unit, pct }) {
   const zone = pct !== null ? getZone(pct) : 'normal';
   const barColor = zone === 'low' ? '#7AB8DC' : zone === 'high' ? '#F08050' : '#7DC87A';
   const textColor = zone === 'low' ? '#2A70A0' : zone === 'high' ? '#C05020' : '#2A8030';
   return (
     <View style={pctStyles.card}>
-      <Text style={pctStyles.emoji}>{emoji}</Text>
+      <Ionicons name={icon} size={20} color="#8A7050" style={pctStyles.icon} />
       <Text style={pctStyles.label}>{label}</Text>
       <Text style={pctStyles.val}>{value !== null ? value : '--'}</Text>
       <Text style={pctStyles.unit}>{unit}</Text>
@@ -584,7 +603,7 @@ const pctStyles = StyleSheet.create({
     alignItems: 'center', marginHorizontal: 3,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
   },
-  emoji: { fontSize: 20, marginBottom: 3 },
+  icon: { marginBottom: 3 },
   label: { fontSize: 10, color: '#A09070', fontWeight: '600', marginBottom: 2 },
   val: { fontSize: 18, fontWeight: '800', color: '#4A3520', lineHeight: 22 },
   unit: { fontSize: 10, color: '#8A7050', marginBottom: 6 },
@@ -597,7 +616,10 @@ const pctStyles = StyleSheet.create({
 function RecVal({ icon, val, pct }) {
   return (
     <View style={{ marginRight: 10 }}>
-      <Text style={{ fontSize: 13, fontWeight: '600', color: '#4A3520' }}>{icon} {val}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+        <Ionicons name={icon} size={13} color="#8A7050" />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#4A3520' }}>{val}</Text>
+      </View>
       {pct !== null && (
         <Text style={{ fontSize: 11, color: '#8A7050' }}>P{pct} · 상위 {100 - pct}%</Text>
       )}
@@ -716,7 +738,7 @@ const styles = StyleSheet.create({
   scroll: { padding: 16 },
   profileCard: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  profileAvatar: { fontSize: 36 },
+  profileAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F5EDD8', alignItems: 'center', justifyContent: 'center' },
   profileName: {
     flex: 1, fontSize: 18, fontWeight: '700', color: '#4A3520',
     borderBottomWidth: 1.5, borderBottomColor: '#EAD9C0', paddingBottom: 4,
@@ -757,7 +779,7 @@ const styles = StyleSheet.create({
   pctRow: { flexDirection: 'row', marginBottom: 12 },
   interpCard: {},
   interpRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  interpIcon: { fontSize: 24 },
+  interpIcon: {},
   interpTitle: { fontSize: 14, fontWeight: '700', color: '#3A3020', marginBottom: 3 },
   interpBody: { fontSize: 12, color: '#7A6050', lineHeight: 18 },
   saveBtn: {
@@ -777,6 +799,7 @@ const styles = StyleSheet.create({
   recAge: { fontSize: 17, fontWeight: '800', color: '#C87820' },
   recUnit: { fontSize: 9, color: '#8A7050' },
   recDate: { fontSize: 11, color: '#A09070', marginBottom: 5 },
+  recDateRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
   recVals: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   recDel: { padding: 6 },
   feedCard: { marginBottom: 10 },
@@ -784,11 +807,12 @@ const styles = StyleSheet.create({
   feedBasis: { fontSize: 11, color: '#A09070', marginBottom: 12 },
   feedRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   feedItem: { flex: 1, alignItems: 'center', gap: 3 },
-  feedItemEmoji: { fontSize: 20 },
+  feedItemIcon: { marginBottom: 0 },
   feedItemLabel: { fontSize: 10, color: '#A09070', fontWeight: '600', textAlign: 'center' },
   feedItemValue: { fontSize: 13, fontWeight: '800', color: '#C87820', textAlign: 'center' },
   feedDivider: { width: 1, height: 44, backgroundColor: '#F0E5D0' },
   feedNote: { fontSize: 12, color: '#6A8A50', fontWeight: '600', marginBottom: 6 },
+  feedNoteRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   feedDisclaimer: { fontSize: 10, color: '#B0A080' },
   // Milestone styles
   msTitle: { fontSize: 16, fontWeight: '800', color: '#5A3A10' },
@@ -810,7 +834,8 @@ const styles = StyleSheet.create({
   msCheckText: { flex: 1, fontSize: 13.5, color: '#4A3520', fontWeight: '500' },
   msCheckTextDone: { textDecorationLine: 'line-through', color: '#A09070' },
   msCelebCard: { backgroundColor: '#FFF8E0', borderWidth: 2, borderColor: '#F5C842', marginBottom: 14 },
-  msCelebTitle: { fontSize: 17, fontWeight: '800', color: '#C87820', marginBottom: 6 },
+  msCelebTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  msCelebTitle: { fontSize: 17, fontWeight: '800', color: '#C87820' },
   msCelebBody: { fontSize: 13, color: '#7A6050', lineHeight: 20, marginBottom: 14 },
   msCelebBtn: {
     backgroundColor: '#F08050', borderRadius: 12, paddingVertical: 12,

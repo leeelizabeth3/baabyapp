@@ -3,7 +3,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
@@ -79,7 +80,7 @@ export default function App() {
             component={GrowthScreen}
             options={{
               tabBarLabel: '성장 추적',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📈</Text>,
+              tabBarIcon: ({ color, size }) => <Ionicons name="trending-up" color={color} size={size} />,
             }}
           />
           <Tab.Screen
@@ -87,7 +88,7 @@ export default function App() {
             component={CardMakerScreen}
             options={{
               tabBarLabel: '카드 만들기',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📸</Text>,
+              tabBarIcon: ({ color, size }) => <Ionicons name="camera" color={color} size={size} />,
             }}
           />
           <Tab.Screen
@@ -95,7 +96,7 @@ export default function App() {
             component={AlbumScreen}
             options={{
               tabBarLabel: '앨범',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📖</Text>,
+              tabBarIcon: ({ color, size }) => <Ionicons name="images" color={color} size={size} />,
             }}
           />
           <Tab.Screen
@@ -103,7 +104,7 @@ export default function App() {
             component={CelebrationScreen}
             options={{
               tabBarLabel: '기념일',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>🎊</Text>,
+              tabBarIcon: ({ color, size }) => <Ionicons name="gift" color={color} size={size} />,
             }}
           />
           <Tab.Screen
@@ -111,15 +112,14 @@ export default function App() {
             component={JournalScreen}
             options={{
               tabBarLabel: '육아일지',
-              tabBarIcon: ({ color }) => <Text style={{ fontSize: 22 }}>📓</Text>,
+              tabBarIcon: ({ color, size }) => <Ionicons name="book" color={color} size={size} />,
             }}
           />
           <Tab.Screen
             name="Premium"
             component={PremiumScreen}
             options={{
-              tabBarLabel: '프리미엄',
-              tabBarIcon: () => <Text style={{ fontSize: 22 }}>✨</Text>,
+              tabBarButton: () => null,
             }}
           />
         </Tab.Navigator>

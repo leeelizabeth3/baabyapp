@@ -10,6 +10,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { AppHeader } from '../components/UI';
+import { Ionicons } from '@expo/vector-icons';
 import {
   getJournalEntries, saveJournalEntry, updateJournalEntry, deleteJournalEntry,
 } from '../utils/storage';
@@ -193,7 +194,7 @@ export default function JournalScreen() {
             {entry.title ? <Text style={styles.cardTitle}>{entry.title}</Text> : null}
           </View>
           <TouchableOpacity onPress={() => handleDelete(entry.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={styles.deleteBtn}>🗑</Text>
+            <Ionicons name="trash-outline" size={18} color="#CCA878" />
           </TouchableOpacity>
         </View>
         {thumbUri && (
@@ -201,7 +202,10 @@ export default function JournalScreen() {
         )}
         <Text style={styles.cardText} numberOfLines={3}>{entry.text}</Text>
         {(entry.photos?.length || 0) > 1 && (
-          <Text style={styles.photoCount}>📷 사진 {entry.photos.length}장</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <Ionicons name="camera-outline" size={13} color={ACCENT} />
+            <Text style={styles.photoCount}>사진 {entry.photos.length}장</Text>
+          </View>
         )}
       </TouchableOpacity>
     );
@@ -218,7 +222,7 @@ export default function JournalScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {entries.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📓</Text>
+            <Ionicons name="book-outline" size={64} color="#D4B896" />
             <Text style={styles.emptyText}>아직 작성한 일지가 없어요{'\n'}첫 번째 일지를 써볼까요?</Text>
             <TouchableOpacity style={styles.emptyBtn} onPress={openNew}>
               <Text style={styles.emptyBtnText}>일지 쓰기</Text>
@@ -250,7 +254,10 @@ export default function JournalScreen() {
 
             {/* Date picker */}
             <TouchableOpacity style={styles.dateRow} onPress={() => setShowDatePicker(true)}>
-              <Text style={styles.dateLabel}>📅 {formatDisplay(form.date)}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="calendar-outline" size={14} color="#6B4200" />
+                <Text style={styles.dateLabel}>{formatDisplay(form.date)}</Text>
+              </View>
               <Text style={styles.dateChange}>변경</Text>
             </TouchableOpacity>
             {showDatePicker && (
@@ -309,12 +316,12 @@ export default function JournalScreen() {
                   <View key={idx} style={styles.photoThumbWrap}>
                     <Image source={{ uri }} style={styles.photoThumb} resizeMode="cover" />
                     <TouchableOpacity style={styles.photoRemove} onPress={() => removeFormPhoto(idx)}>
-                      <Text style={styles.photoRemoveText}>✕</Text>
+                      <Ionicons name="close" size={11} color="#fff" />
                     </TouchableOpacity>
                   </View>
                 ))}
                 <TouchableOpacity style={styles.photoAddBtn} onPress={pickPhoto}>
-                  <Text style={styles.photoAddIcon}>📷</Text>
+                  <Ionicons name="camera-outline" size={22} color="#A08040" />
                   <Text style={styles.photoAddText}>사진 추가</Text>
                 </TouchableOpacity>
               </ScrollView>

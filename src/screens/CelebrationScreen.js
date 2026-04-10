@@ -14,6 +14,7 @@ import {
   AppHeader, SectionTitle, Card, PrimaryButton, SecondaryButton,
   FormField, StyledInput, COLORS,
 } from '../components/UI';
+import { Ionicons } from '@expo/vector-icons';
 import { getBabyProfile } from '../utils/storage';
 import FirstYearCollageScreen from './FirstYearCollageScreen';
 
@@ -48,9 +49,9 @@ function calcMilestones(birthdate) {
   const diff = (d) => Math.ceil((d - today) / (1000 * 60 * 60 * 24));
 
   return [
-    { label: '100일', emoji: '🎂', date: day100, daysLeft: diff(day100) },
-    { label: '200일', emoji: '🌟', date: day200, daysLeft: diff(day200) },
-    { label: '돌', emoji: '🎉', date: dol, daysLeft: diff(dol) },
+    { label: '100일', icon: 'gift-outline',    iconColor: '#C87820', date: day100, daysLeft: diff(day100) },
+    { label: '200일', icon: 'star-outline',     iconColor: '#7B68EE', date: day200, daysLeft: diff(day200) },
+    { label: '돌',    icon: 'star-outline',      iconColor: '#E8506A', date: dol,    daysLeft: diff(dol) },
   ];
 }
 
@@ -59,9 +60,9 @@ function formatDate(date) {
 }
 
 const INVITE_THEMES = {
-  yellow: { bg: '#FFFDF5', accent: '#C8860A', accentLight: '#FDEEB0', titleColor: '#8B5E0A', flower: '🌼', sub: '#B8A060' },
-  pink: { bg: '#FDF5F7', accent: '#C8506A', accentLight: '#FFD0DC', titleColor: '#A03050', flower: '🌸', sub: '#C08090' },
-  sky: { bg: '#F5F9FD', accent: '#3A7EC8', accentLight: '#C8E4FF', titleColor: '#2A5EA0', flower: '🩵', sub: '#7AAAD0' },
+  yellow: { bg: '#FFFDF5', accent: '#C8860A', accentLight: '#FDEEB0', titleColor: '#8B5E0A', sub: '#B8A060' },
+  pink:   { bg: '#FDF5F7', accent: '#C8506A', accentLight: '#FFD0DC', titleColor: '#A03050', sub: '#C08090' },
+  sky:    { bg: '#F5F9FD', accent: '#3A7EC8', accentLight: '#C8E4FF', titleColor: '#2A5EA0', sub: '#7AAAD0' },
 };
 
 // ── 돌잔치 전용 카드 ──────────────────────────────
@@ -148,7 +149,7 @@ const DolCard = React.forwardRef(function DolCard(
       }}>
         {photoUri
           ? <Image source={{ uri: photoUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-          : <Text style={{ fontSize: 49 }}>👶</Text>
+          : <Ionicons name="person" size={49} color="#C0B090" />
         }
       </View>
 
@@ -206,7 +207,7 @@ const DolCard = React.forwardRef(function DolCard(
         {/* 푸터 */}
         <SvgText x={cx} y={footerY} textAnchor="middle"
           fontSize={cardW * 0.026} fill={themeColor} opacity={0.35}>
-          Made with BabySteps 🍼
+        Made with BabySteps
         </SvgText>
       </Svg>
 
@@ -254,7 +255,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
   const { type, babyName, eventDate, eventTime, venue, message, photoUri, theme, parentDad, parentMom, fontFamily } = props;
   const ff = fontFamily || undefined;
   const t = INVITE_THEMES[theme] || INVITE_THEMES.yellow;
-  const { bg, accent, accentLight, titleColor, flower, sub } = t;
+  const { bg, accent, accentLight, titleColor, sub } = t;
   const cardW = SW - 32;
   const heartW = cardW - 72;
   const heartH = heartW * 0.88;
@@ -262,10 +263,10 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
   const nameLine = (babyName || '아기').split('');
   return (
     <View ref={ref} style={[inviteStyles.card, { backgroundColor: bg, width: cardW }]}>
-      <Text style={inviteStyles.cornerTL}>{flower}</Text>
-      <Text style={inviteStyles.cornerTR}>{flower}</Text>
-      <Text style={inviteStyles.cornerBL}>{flower}</Text>
-      <Text style={inviteStyles.cornerBR}>{flower}</Text>
+      <Ionicons name="flower-outline" size={28} color={accent} style={inviteStyles.cornerTL} />
+      <Ionicons name="flower-outline" size={28} color={accent} style={inviteStyles.cornerTR} />
+      <Ionicons name="flower-outline" size={28} color={accent} style={inviteStyles.cornerBL} />
+      <Ionicons name="flower-outline" size={28} color={accent} style={inviteStyles.cornerBR} />
       <View style={inviteStyles.rightTitle}>
         {typeLine.map((ch, i) => (
           <Text key={i} style={[inviteStyles.rightTitleType, { color: titleColor, fontFamily: ff }]}>{ch}</Text>
@@ -286,7 +287,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
         <View style={[inviteStyles.photoRound, { borderColor: accent }]}>
           {photoUri
             ? <Image source={{ uri: photoUri }} style={inviteStyles.photoImg} />
-            : <Text style={{ fontSize: 60 }}>🍼</Text>
+            : <Ionicons name="person-outline" size={60} color="#C0B090" />
           }
         </View>
       </View>
@@ -306,7 +307,7 @@ const InviteCard = React.forwardRef(function InviteCard(props, ref) {
           {parentMom ? <Text style={[inviteStyles.parentText, { color: accent, fontFamily: ff }]}>엄마 {parentMom}</Text> : null}
         </View>
       ) : null}
-      <Text style={[inviteStyles.footer, { color: sub + '80', fontFamily: ff }]}>Made with BabySteps 🍼</Text>
+      <Text style={[inviteStyles.footer, { color: sub + '80', fontFamily: ff }]}>Made with BabySteps</Text>
     </View>
   );
 });
@@ -363,7 +364,7 @@ export default function CelebrationScreen() {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') await MediaLibrary.createAssetAsync(tmpUri);
       } catch (_) { }
-      Alert.alert('저장 완료! 🎉', '사진첩에 저장되었어요!');
+      Alert.alert('저장 완료!', '사진첩에 저장되었어요!');
     } catch (e) {
       Alert.alert('오류', '저장 중 오류가 발생했어요: ' + e.message);
     }
@@ -399,13 +400,13 @@ export default function CelebrationScreen() {
           style={[styles.tabBtn, activeTab === 'celebration' && styles.tabBtnActive]}
           onPress={() => setActiveTab('celebration')}
         >
-          <Text style={[styles.tabBtnText, activeTab === 'celebration' && styles.tabBtnTextActive]}>🎊 기념일</Text>
+          <Text style={[styles.tabBtnText, activeTab === 'celebration' && styles.tabBtnTextActive]}>기념일</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabBtn, activeTab === 'collage' && styles.tabBtnActive]}
           onPress={() => setActiveTab('collage')}
         >
-          <Text style={[styles.tabBtnText, activeTab === 'collage' && styles.tabBtnTextActive]}>🎞 콜라주</Text>
+          <Text style={[styles.tabBtnText, activeTab === 'collage' && styles.tabBtnTextActive]}>콜라주</Text>
         </TouchableOpacity>
       </View>
 
@@ -416,11 +417,11 @@ export default function CelebrationScreen() {
 
         {/* ── 카운트다운 ── */}
         <View style={styles.sec}>
-          <SectionTitle>🗓 카운트다운</SectionTitle>
+          <SectionTitle>카운트다운</SectionTitle>
           {!birthdate ? (
             <Card>
               <Text style={styles.noBirthText}>
-                카드 만들기 탭에서 생년월일을 입력하면{'\n'}카운트다운이 자동으로 표시돼요 🍼
+                카드 만들기 탭에서 생년월일을 입력하면{'\n'}카운트다운이 자동으로 표시돼요
               </Text>
             </Card>
           ) : (
@@ -430,7 +431,7 @@ export default function CelebrationScreen() {
                 const today = m.daysLeft === 0;
                 return (
                   <View key={m.label} style={[styles.countdownCard, today && styles.countdownCardToday]}>
-                    <Text style={styles.countdownEmoji}>{m.emoji}</Text>
+                    <Ionicons name={m.icon} size={28} color={m.iconColor} style={{ marginBottom: 4 }} />
                     <Text style={styles.countdownLabel}>{m.label}</Text>
                     <Text style={styles.countdownDateSmall}>{formatDate(m.date)}</Text>
                     {today ? (
@@ -455,7 +456,7 @@ export default function CelebrationScreen() {
 
         {/* ── 초대장 만들기 ── */}
         <View style={styles.sec}>
-          <SectionTitle>💌 초대장 만들기</SectionTitle>
+          <SectionTitle>초대장 만들기</SectionTitle>
           <Card>
             {/* 탭 */}
             <View style={styles.typeTab}>
@@ -463,13 +464,13 @@ export default function CelebrationScreen() {
                 style={[styles.typeBtn, inviteType === '100' && styles.typeBtnActive100]}
                 onPress={() => { setInviteType('100'); setCardVisible(false); }}
               >
-                <Text style={[styles.typeBtnText, inviteType === '100' && styles.typeBtnTextActive]}>🎂 100일</Text>
+                <Text style={[styles.typeBtnText, inviteType === '100' && styles.typeBtnTextActive]}>100일</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.typeBtn, inviteType === 'dol' && styles.typeBtnActiveDol]}
                 onPress={() => { setInviteType('dol'); setCardVisible(false); }}
               >
-                <Text style={[styles.typeBtnText, inviteType === 'dol' && styles.typeBtnTextActive]}>🎉 돌잔치</Text>
+                <Text style={[styles.typeBtnText, inviteType === 'dol' && styles.typeBtnTextActive]}>돌잔치</Text>
               </TouchableOpacity>
             </View>
 
@@ -481,7 +482,7 @@ export default function CelebrationScreen() {
                   style={[styles.themeDot, { backgroundColor: t.accent }, inviteTheme === key && styles.themeDotActive]}
                   onPress={() => { setInviteTheme(key); setCardVisible(false); }}
                 >
-                  {inviteTheme === key && <Text style={styles.themeDotCheck}>✓</Text>}
+                  {inviteTheme === key && <Ionicons name="checkmark" size={14} color="#fff" />}
                 </TouchableOpacity>
               ))}
               <Text style={styles.themeHint}>테마 색상</Text>
@@ -489,7 +490,7 @@ export default function CelebrationScreen() {
 
             {/* 폰트 선택 */}
             <View style={styles.fontPickerSection}>
-              <Text style={styles.fontPickerLabel}>✏️ 폰트</Text>
+              <Text style={styles.fontPickerLabel}>폰트</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
                 {FONT_OPTIONS.map(opt => {
                   const active = selectedFont === opt.key;
@@ -541,7 +542,7 @@ export default function CelebrationScreen() {
             </View>
 
             {/* 장소 */}
-            <FormField label="📍 장소">
+            <FormField label="장소">
               <StyledInput
                 value={venue}
                 onChangeText={setVenue}
@@ -551,13 +552,13 @@ export default function CelebrationScreen() {
             </FormField>
 
             {/* 메시지 */}
-            <FormField label="💬 한마디">
+            <FormField label="한마디">
               <StyledInput
                 value={message}
                 onChangeText={setMessage}
                 placeholder={inviteType === '100'
-                  ? "예: 소중한 분들과 함께\n제니의 100일을 축하하고 싶어요 🎂"
-                  : "예: 사랑하는 분들을 모시고\n제니의 첫 생일을 함께 하고 싶어요 🎉"}
+                  ? "예: 소중한 분들과 함께\n제니의 100일을 축하하고 싶어요"
+                  : "예: 사랑하는 분들을 모시고\n제니의 첫 생일을 함께 하고 싶어요"}
                 multiline
               />
             </FormField>
@@ -580,27 +581,28 @@ export default function CelebrationScreen() {
                 <Image source={{ uri: photoUri }} style={styles.photoPreview} />
               ) : (
                 <>
-                  <Text style={styles.photoIcon}>📷</Text>
+                  <Ionicons name="camera-outline" size={24} color="#A08050" style={{ marginBottom: 4 }} />
                   <Text style={styles.photoText}>아기 사진 선택 (선택)</Text>
                 </>
               )}
             </TouchableOpacity>
             {photoUri && (
-              <TouchableOpacity onPress={() => setPhotoUri(null)} style={{ alignSelf: 'center', marginTop: 6 }}>
-                <Text style={{ color: '#E06040', fontSize: 13 }}>✕ 사진 삭제</Text>
+              <TouchableOpacity onPress={() => setPhotoUri(null)} style={{ alignSelf: 'center', marginTop: 6, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="trash-outline" size={14} color="#E06040" />
+                <Text style={{ color: '#E06040', fontSize: 13 }}>사진 삭제</Text>
               </TouchableOpacity>
             )}
           </Card>
         </View>
 
         <PrimaryButton onPress={() => setCardVisible(true)}>
-          ✨ {inviteType === '100' ? '100일' : '돌잔치'} 초대장 만들기!
+          {inviteType === '100' ? '100일' : '돌잔치'} 초대장 만들기
         </PrimaryButton>
 
         {/* ── 초대장 미리보기 ── */}
         {cardVisible && (
           <View style={styles.cardSection}>
-            <Text style={styles.cardHint}>👇 완성된 초대장</Text>
+            <Text style={styles.cardHint}>완성된 초대장</Text>
             <InviteCard
               ref={cardRef}
               type={inviteType}
@@ -616,13 +618,13 @@ export default function CelebrationScreen() {
               parentMom={parentMom}
             />
             <SecondaryButton onPress={saveCard} style={saving ? { opacity: 0.7 } : {}}>
-              {saving ? '저장 중...' : '💾 사진첩에 저장하기'}
+              {saving ? '저장 중...' : '사진첩에 저장하기'}
             </SecondaryButton>
             <SecondaryButton
               onPress={shareCard}
               style={[{ marginTop: 8, backgroundColor: '#4A90D9', borderColor: '#2E70B8' }, saving ? { opacity: 0.7 } : {}]}
             >
-              {saving ? '처리 중...' : '📤 인스타·카카오톡·페이스북 공유'}
+              {saving ? '처리 중...' : '인스타·카카오톡·페이스북 공유'}
             </SecondaryButton>
           </View>
         )}
@@ -725,7 +727,6 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2, shadowRadius: 4, elevation: 3,
   },
-  themeDotCheck: { color: '#fff', fontSize: 14, fontWeight: '800' },
   themeHint: { fontSize: 11, color: '#A08050', fontWeight: '600', marginLeft: 2 },
   typeTab: {
     flexDirection: 'row', gap: 8, marginBottom: 14,
@@ -751,7 +752,6 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 16, alignItems: 'center', backgroundColor: '#FFFDF5', marginTop: 4,
   },
   photoPreview: { width: '100%', height: 160, borderRadius: 10 },
-  photoIcon: { fontSize: 24, marginBottom: 4 },
   photoText: { fontSize: 13, color: '#8A7050' },
   cardSection: { marginTop: 20 },
   cardHint: { fontSize: 12, color: '#8A7050', textAlign: 'center', marginBottom: 10 },

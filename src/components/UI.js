@@ -4,6 +4,7 @@ import {
   View, Text, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import SproutMascot from './SproutMascot';
 
 export const COLORS = {
@@ -119,10 +120,13 @@ export function Tag({ children, bg = COLORS.tagBg, color = COLORS.tagText }) {
 }
 
 // ── Empty state ───────────────────────────────
-export function EmptyState({ emoji, title, subtitle }) {
+export function EmptyState({ icon, iconColor = '#D4B896', emoji, title, subtitle }) {
   return (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyEmoji}>{emoji}</Text>
+      {icon
+        ? <Ionicons name={icon} size={58} color={iconColor} style={{ marginBottom: 14 }} />
+        : <Text style={styles.emptyEmoji}>{emoji}</Text>
+      }
       <Text style={styles.emptyTitle}>{title}</Text>
       {subtitle && <Text style={styles.emptySub}>{subtitle}</Text>}
     </View>

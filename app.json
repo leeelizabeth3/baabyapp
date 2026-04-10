@@ -3,7 +3,7 @@
     "name": "BabySteps",
     "slug": "baby-growth-report",
     "owner": "bobae317",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "icon": "./assets/icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
